@@ -64,5 +64,11 @@ module GiCatDriver
 
       RestClient.get(active_profile_request, standard_headers)
     end
+
+    def get_current_profile_id
+       RestClient.get(
+       "#{@base_url}/services/conf/giconf/configuration",
+       standard_headers)
+     end
   end
 end
