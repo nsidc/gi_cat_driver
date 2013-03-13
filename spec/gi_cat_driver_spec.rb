@@ -4,7 +4,7 @@ require 'gi_cat_driver'
 describe GiCatDriver do
   before(:each) do
     @base_url = ENV["URL"] or throw "Error: Must provide URL environment variable for GI-Cat!"
-    @gi_cat = GiCatDriver::GiCat.new(@base_url)
+    @gi_cat = GiCatDriver::GiCat.new(@base_url, "admin", "abcd123$")
   end
 
   it "Initializes with a base url that points to an instance of GI-Cat" do
@@ -28,8 +28,21 @@ describe GiCatDriver do
     @gi_cat.find_profile_id("NORWEGIAN_CISL_NSIDC_EOL").should eq "1"
   end
 
+  it "Throws an error if the profile cannot be found" do
+    @gi_cat.find_profile_id("notaprofile").should be_nil
+  end
+
   it "Enables a profile given the name" do
     @gi_cat.enable_profile("NORWEGIAN_CISL_NSIDC_EOL")
-    @gi_cat.get_active_profile.should eq "1"
+    @gi_cat.get_active_profile_id.should eq "1"
+  end
+
+  it "Does not enable a profile if the profile cannot be found" do
+    expect { @gi_cat.enable_profile("notaprofile") }.to raise_error("The specified profile could not be found.")
+  end
+
+  it "Enables Lucene for the active profile" do
+    @gi_cat.enable_lucene
+    @gi_cat.is_lucene_enabled?.should be_true
   end
 end
