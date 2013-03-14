@@ -7,11 +7,6 @@ describe GiCatDriver do
     @gi_cat = GiCatDriver::GiCat.new(@base_url, "admin", "abcd123$")
   end
 
-  it "Initializes with a base url that points to an instance of GI-Cat" do
-    expected = @base_url.sub(/\/+$/, '')
-    @gi_cat.base_url.should eq(expected)
-  end
-
   describe "Standard requests" do
     #it "Is able to send requests to GI-Cat" do
       #@gi_cat.is_running?.should be_true

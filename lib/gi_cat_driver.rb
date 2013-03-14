@@ -89,5 +89,24 @@ module GiCatDriver
 
       return result_scores.count > 0
     end
+
+    def enable_lucene
+      set_lucene_enabled true
+    end
+
+    def set_lucene_enabled( enabled )
+      enable_lucene_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}/luceneEnabled"
+      RestClient.put(enable_lucene_request,
+        enabled.to_s,
+        standard_headers)
+
+      activate_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}?opts=active"
+      RestClient.get(activate_profile_request,
+        standard_headers)
+    end
+
+    def is_lucene_enabled?
+      RestClient.get()
+    end
   end
 end
