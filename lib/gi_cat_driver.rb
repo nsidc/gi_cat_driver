@@ -5,6 +5,7 @@ require "rest-client"
 require "base64"
 require 'nokogiri'
 
+# The GI-Cat Driver
 module GiCatDriver
   class GiCat
 
@@ -29,10 +30,13 @@ module GiCatDriver
       }
     end
 
+    # Check whether the URL is accessible
     def is_running?
       open(@base_url).status[0] == "200"
     end
 
+    # Retrieve the ID for a profile given the name
+    # Returns an integer ID reference to the profile
     def find_profile_id( profile_name )
       get_profiles_request = "#{@base_url}/services/conf/brokerConfigurations?nameRepository=gicat"
       modified_headers = standard_headers.merge({
@@ -51,6 +55,7 @@ module GiCatDriver
       return configs.css("brokerConfiguration[name=#{profile_name}]")
     end
 
+    # Enable a profile with the specified name
     def enable_profile( profile_name )
       profile_id = find_profile_id(profile_name)
       raise "The specified profile could not be found." if profile_id.nil?
@@ -59,12 +64,15 @@ module GiCatDriver
       RestClient.get(activate_profile_request, standard_headers)
     end
 
+    # Retrieve the ID for the active profile
+    # Returns an integer ID reference to the active profile
     def get_active_profile_id
       active_profile_request = "#{@base_url}/services/conf/giconf/configuration"
 
       return RestClient.get(active_profile_request, standard_headers)
     end
 
+    # Enable Lucene indexes for GI-Cat search results
     def enable_lucene
       set_lucene_enabled true
     end
@@ -80,6 +88,10 @@ module GiCatDriver
         standard_headers)
     end
 
+    # Find out whether Lucene indexing is turned on for the current profile
+    # It is desirable to use REST to query GI-Cat for the value of this setting but GI-Cat does not yet support this.  
+    # Instead, run a query and check that a 'relevance:score' element is present.
+    # Returns true if Lucene is turned on
     def is_lucene_enabled?
       query_string = EsipOpensearchQueryBuilder::get_query_string({ :st => "snow" })
       results = Nokogiri::XML(open("#{@base_url}/services/opensearchesip#{query_string}"))
@@ -88,21 +100,6 @@ module GiCatDriver
       result_scores.map { |score| score.text }
 
       return result_scores.count > 0
-    end
-
-    def enable_lucene
-      set_lucene_enabled true
-    end
-
-    def set_lucene_enabled( enabled )
-      enable_lucene_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}/luceneEnabled"
-      RestClient.put(enable_lucene_request,
-        enabled.to_s,
-        standard_headers)
-
-      activate_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}?opts=active"
-      RestClient.get(activate_profile_request,
-        standard_headers)
     end
   end
 end
