@@ -1,5 +1,5 @@
 require "gi_cat_driver/version"
-require "esip_opensearch_query_builder"
+require "gi_cat_driver/esip_opensearch_query_builder"
 require "open-uri"
 require "rest-client"
 require "base64"
@@ -103,10 +103,6 @@ module GiCatDriver
       activate_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}?opts=active"
       RestClient.get(activate_profile_request,
         standard_headers)
-    end
-
-    def is_lucene_enabled?
-      RestClient.get()
     end
   end
 end
