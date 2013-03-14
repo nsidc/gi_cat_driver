@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'esip_opensearch_query_builder'
+require 'gi_cat_driver/esip_opensearch_query_builder'
 
 describe EsipOpensearchQueryBuilder do
 
