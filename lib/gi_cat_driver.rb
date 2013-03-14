@@ -18,10 +18,6 @@ module GiCatDriver
       @admin_password = password
     end
 
-    def base_url
-      @base_url
-    end
-
     def basic_auth_string
       "Basic " + Base64.encode64("#{@admin_username}:#{@admin_password}").rstrip
     end
