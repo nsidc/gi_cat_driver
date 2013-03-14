@@ -18,12 +18,22 @@ Or install it yourself as:
 
 ## Usage
 
-To start using the gem create a new instance
+Assuming you have a GI-Cat application running at http://www.company.com/api/gi-cat/ 
+and an administrative login of username='admin', password='password' create a new GiCat
+to start using the gem.
 
 ```ruby
 gi_cat = GiCatDriver::GiCat.new('http://www.company.com/api/gi-cat', 'admin', 'password')
 ```
-Please note you must provide a URL to a running GI-Cat instance as well as the administrator username and password.
+Note you must provide a URL to a running GI-Cat instance as well as the administrator username and password.
+
+## API Documentation
+
+Main API methods are
+
+```ruby
+GiCatDriver
+```
 
 ## Contributing
 
@@ -32,3 +42,13 @@ Please note you must provide a URL to a running GI-Cat instance as well as the a
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+
+## License
+
+GI-Cat Driver is licensed under the MIT license. See [LICENSE.txt][license].
+
+[license]: https://raw.github.com/nsidc/gi_cat_driver/master/LICENSE.txt
+
+## Credit
+
+This software was developed by the National Snow and Ice Data Center, sponsored by the National Science Foundation grant number OPP-10-16048.

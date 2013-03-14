@@ -1,4 +1,7 @@
-Copyright (c) 2013 Stuart Reed
+Copyright (c) 2013 Regents of the University of Colorado
+
+This software was developed by the National Snow and Ice Data Center,
+sponsored by the National Science Foundation grant number OPP-10-16048.
 
 MIT License
 
