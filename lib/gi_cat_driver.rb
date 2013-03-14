@@ -11,10 +11,10 @@ module GiCatDriver
 
     ATOM_NAMESPACE = { "atom" => "http://www.w3.org/2005/Atom" }
     RELEVANCE_NAMESPACE = { "relevance" => "http://a9.com/-/opensearch/extensions/relevance/1.0/" }
-
+    attr_accessor :base_url
+    
     def initialize( url, username, password )
-      @base_url = url.sub(/\/+$/, '')  # strip trailing slashes
-
+      self.base_url = url.sub(/\/+$/, '') 
       @admin_username = username
       @admin_password = password
     end
@@ -32,13 +32,13 @@ module GiCatDriver
 
     # Check whether the URL is accessible
     def is_running?
-      open(@base_url).status[0] == "200"
+      open(self.base_url).status[0] == "200"
     end
 
     # Retrieve the ID for a profile given the name
     # Returns an integer ID reference to the profile
     def find_profile_id( profile_name )
-      get_profiles_request = "#{@base_url}/services/conf/brokerConfigurations?nameRepository=gicat"
+      get_profiles_request = "#{self.base_url}/services/conf/brokerConfigurations?nameRepository=gicat"
       modified_headers = standard_headers.merge({
         :content_type => "*/*",
         :Accept => 'application/xml'
@@ -59,7 +59,7 @@ module GiCatDriver
     def enable_profile( profile_name )
       profile_id = find_profile_id(profile_name)
       raise "The specified profile could not be found." if profile_id.nil?
-      activate_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}?opts=active"
+      activate_profile_request = "#{self.base_url}/services/conf/brokerConfigurations/#{profile_id}?opts=active"
 
       RestClient.get(activate_profile_request, standard_headers)
     end
@@ -67,7 +67,7 @@ module GiCatDriver
     # Retrieve the ID for the active profile
     # Returns an integer ID reference to the active profile
     def get_active_profile_id
-      active_profile_request = "#{@base_url}/services/conf/giconf/configuration"
+      active_profile_request = "#{self.base_url}/services/conf/giconf/configuration"
 
       return RestClient.get(active_profile_request, standard_headers)
     end
@@ -78,12 +78,12 @@ module GiCatDriver
     end
 
     def set_lucene_enabled( enabled )
-      enable_lucene_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}/luceneEnabled"
+      enable_lucene_request = "#{self.base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}/luceneEnabled"
       RestClient.put(enable_lucene_request,
         enabled.to_s,
         standard_headers)
 
-      activate_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}?opts=active"
+      activate_profile_request = "#{self.base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}?opts=active"
       RestClient.get(activate_profile_request,
         standard_headers)
     end
@@ -94,7 +94,7 @@ module GiCatDriver
     # Returns true if Lucene is turned on
     def is_lucene_enabled?
       query_string = EsipOpensearchQueryBuilder::get_query_string({ :st => "snow" })
-      results = Nokogiri::XML(open("#{@base_url}/services/opensearchesip#{query_string}"))
+      results = Nokogiri::XML(open("#{self.base_url}/services/opensearchesip#{query_string}"))
 
       result_scores = results.xpath('//atom:feed/atom:entry/relevance:score', ATOM_NAMESPACE.merge(RELEVANCE_NAMESPACE))
       result_scores.map { |score| score.text }
