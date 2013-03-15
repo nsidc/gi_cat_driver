@@ -4,6 +4,7 @@ require "open-uri"
 require "rest-client"
 require "base64"
 require 'nokogiri'
+require 'timeout'
 
 # The GI-Cat Driver
 module GiCatDriver
@@ -11,12 +12,13 @@ module GiCatDriver
 
     ATOM_NAMESPACE = { "atom" => "http://www.w3.org/2005/Atom" }
     RELEVANCE_NAMESPACE = { "relevance" => "http://a9.com/-/opensearch/extensions/relevance/1.0/" }
-    attr_accessor :base_url
+    attr_accessor :base_url, :harvestersid_array
     
     def initialize( url, username, password )
-      self.base_url = url.sub(/\/+$/, '') 
+      @base_url = url.sub(/\/+$/, '')
       @admin_username = username
       @admin_password = password
+      @harvestersid_array = []
     end
 
     def basic_auth_string
@@ -32,13 +34,13 @@ module GiCatDriver
 
     # Check whether the URL is accessible
     def is_running?
-      open(self.base_url).status[0] == "200"
+      open(@base_url).status[0] == "200"
     end
 
     # Retrieve the ID for a profile given the name
     # Returns an integer ID reference to the profile
     def find_profile_id( profile_name )
-      get_profiles_request = "#{self.base_url}/services/conf/brokerConfigurations?nameRepository=gicat"
+      get_profiles_request = "#{@base_url}/services/conf/brokerConfigurations?nameRepository=gicat"
       modified_headers = standard_headers.merge({
         :content_type => "*/*",
         :Accept => 'application/xml'
@@ -59,7 +61,7 @@ module GiCatDriver
     def enable_profile( profile_name )
       profile_id = find_profile_id(profile_name)
       raise "The specified profile could not be found." if profile_id.nil?
-      activate_profile_request = "#{self.base_url}/services/conf/brokerConfigurations/#{profile_id}?opts=active"
+      activate_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}?opts=active"
 
       RestClient.get(activate_profile_request, standard_headers)
     end
@@ -67,7 +69,7 @@ module GiCatDriver
     # Retrieve the ID for the active profile
     # Returns an integer ID reference to the active profile
     def get_active_profile_id
-      active_profile_request = "#{self.base_url}/services/conf/giconf/configuration"
+      active_profile_request = "#{@base_url}/services/conf/giconf/configuration"
 
       return RestClient.get(active_profile_request, standard_headers)
     end
@@ -83,12 +85,12 @@ module GiCatDriver
     end
 
     def set_lucene_enabled( enabled )
-      enable_lucene_request = "#{self.base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}/luceneEnabled"
+      enable_lucene_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}/luceneEnabled"
       RestClient.put(enable_lucene_request,
         enabled.to_s,
         standard_headers)
 
-      activate_profile_request = "#{self.base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}?opts=active"
+      activate_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}?opts=active"
       RestClient.get(activate_profile_request,
         standard_headers)
     end
@@ -99,12 +101,61 @@ module GiCatDriver
     # Returns true if Lucene is turned on
     def is_lucene_enabled?
       query_string = EsipOpensearchQueryBuilder::get_query_string({ :st => "snow" })
-      results = Nokogiri::XML(open("#{self.base_url}/services/opensearchesip#{query_string}"))
+      results = Nokogiri::XML(open("#{@base_url}/services/opensearchesip#{query_string}"))
 
       result_scores = results.xpath('//atom:feed/atom:entry/relevance:score', ATOM_NAMESPACE.merge(RELEVANCE_NAMESPACE))
       result_scores.map { |score| score.text }
 
       return result_scores.count > 0
     end
+    
+    def add_new_uuids(new_harvesterids_array)
+      @harvestersid_array += new_harvesterids_array
+    end
+
+    def harvest_resource_for_active_configuration(harvesterid)
+      RestClient.get(
+        "#{@base_url}/services/conf/brokerConfigurations/#{self.get_active_profile_id}/harvesters/#{harvesterid}/start",
+        standard_headers){ |response, request, result, &block|
+          case response.code
+            when 200
+              p "Harvest initiated.  Please wait a couple minutes for the process to complete."
+            else
+              raise "Failed to start GI-Cat resource harvest."
+              response.return!(request, result, &block)
+            end
+        }
+    end
+
+    def harvest_all_resources_for_active_configuration
+      harvestersid_array.each do |harvesterid|
+        harvest_resource_for_active_configuration(harvesterid)
+      end
+    end
+
+    def havest_request_is_done(harvesterid)
+      while(1) do
+        rnum=rand
+        request = @base_url + "/services/conf/giconf/status?id=#{harvesterid}&rand=#{rnum}"
+        response = RestClient.get request
+        teststring = String.new(response.body)
+        if teststring.include?("Harvesting completed")
+          break
+        end
+      end
+    end
+    
+    def confirm_harvest_done
+      begin
+        Timeout::timeout(10) do
+          harvestersid_array.each  do |harvesterid|
+            havest_request_is_done(harvesterid)
+          end
+        end
+      rescue Timeout::Error
+        puts "Warning: reharvest is time out, we are going to reuse the previous harvest results"
+      end
+    end
+    
   end
 end
