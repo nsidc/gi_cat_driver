@@ -79,7 +79,7 @@ module GiCatDriver
       set_lucene_enabled true
     end
     
-     # Disable Lucene indexes for GI-Cat search results
+    # Disable Lucene indexes for GI-Cat search results
     def disable_lucene
       set_lucene_enabled false
     end
@@ -109,10 +109,12 @@ module GiCatDriver
       return result_scores.count > 0
     end
     
-    def add_new_uuids(new_harvesterids_array)
+    # Build the harvester resource id array
+    def add_harvester_resource_id(new_harvesterids_array)
       @harvestersid_array += new_harvesterids_array
     end
 
+    # Harvest from specified resource
     def harvest_resource_for_active_configuration(harvesterid)
       RestClient.get(
         "#{@base_url}/services/conf/brokerConfigurations/#{self.get_active_profile_id}/harvesters/#{harvesterid}/start",
@@ -127,12 +129,14 @@ module GiCatDriver
         }
     end
 
+    # Harvest all resource in the active profile
     def harvest_all_resources_for_active_configuration
       harvestersid_array.each do |harvesterid|
         harvest_resource_for_active_configuration(harvesterid)
       end
     end
 
+    # Run till the harvest of a resource is completed
     def havest_request_is_done(harvesterid)
       while(1) do
         rnum=rand
@@ -145,6 +149,7 @@ module GiCatDriver
       end
     end
     
+    # Run till harvest all the resource is completed or time out
     def confirm_harvest_done
       begin
         Timeout::timeout(10) do
