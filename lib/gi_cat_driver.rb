@@ -110,8 +110,8 @@ module GiCatDriver
     end
     
     # Build the harvester resource id array
-    def add_harvester_resource_id(new_harvesterids_array)
-      @harvestersid_array += new_harvesterids_array
+    def add_harvester_resource_id(resource_id)
+      @harvestersid_array.push(resource_id)
     end
 
     # Harvest from specified resource
