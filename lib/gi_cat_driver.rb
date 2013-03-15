@@ -76,6 +76,11 @@ module GiCatDriver
     def enable_lucene
       set_lucene_enabled true
     end
+    
+     # Disable Lucene indexes for GI-Cat search results
+    def disable_lucene
+      set_lucene_enabled false
+    end
 
     def set_lucene_enabled( enabled )
       enable_lucene_request = "#{self.base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}/luceneEnabled"
