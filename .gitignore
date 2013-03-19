@@ -1,0 +1,10 @@
+*.gem
+*.rbc
+.rvmrc
+.bundle
+Gemfile
+Gemfile.lock
+doc/
+pkg
+rdoc
+spec/reports
