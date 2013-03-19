@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>gi_cat_driver.rb</title>
+  <link rel="stylesheet" href="http://jashkenas.github.com/docco/resources/docco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <table cellspacing=0 cellpadding=0>
+  <thead>
+    <tr>
+      <th class=docs><h1>gi_cat_driver.rb</h1></th>
+      <th class=code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr id='section-1'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-1">&#182;</a>
+        </div>
+        
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="nb">require</span> <span class="s2">&quot;gi_cat_driver/version&quot;</span>
+<span class="nb">require</span> <span class="s2">&quot;gi_cat_driver/configuration&quot;</span>
+<span class="nb">require</span> <span class="s2">&quot;gi_cat_driver/client&quot;</span>
+<span class="nb">require</span> <span class="s2">&quot;gi_cat_driver/esip_opensearch_query_builder&quot;</span>
+<span class="nb">require</span> <span class="s2">&quot;open-uri&quot;</span>
+<span class="nb">require</span> <span class="s2">&quot;rest-client&quot;</span>
+<span class="nb">require</span> <span class="s2">&quot;base64&quot;</span>
+<span class="nb">require</span> <span class="s1">&#39;nokogiri&#39;</span>
+<span class="nb">require</span> <span class="s1">&#39;timeout&#39;</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-2'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-2">&#182;</a>
+        </div>
+        <p>The GI-Cat Driver</p>
+
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="k">module</span> <span class="nn">GiCatDriver</span>
+  <span class="kp">extend</span> <span class="no">Configuration</span>
+
+  <span class="k">class</span> <span class="o">&lt;&lt;</span> <span class="nb">self</span>
+    <span class="k">def</span> <span class="nf">new</span>
+      <span class="ss">GiCatDriver</span><span class="p">:</span><span class="ss">:Client</span><span class="o">.</span><span class="n">new</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre></div></pre></div>
+      </td>
+    </tr>
+  </table>
+</div>
+</body>
