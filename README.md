@@ -45,8 +45,20 @@ Rubydoc API documentation is available at http://rubydoc.info/gems/gi_cat_driver
 ## Version History
 
 * 0.0.8
-  * Something
-  * Something else
+  * Minor refactoring
+* 0.0.7
+  * Code documentation
+* 0.0.6
+  * Dropped ruby version to 1.9.3-p194
+* 0.0.5
+  * Added methods to initiate and monitor harvesting with GI-Cat
+* 0.0.4
+* 0.0.2
+  * Added code documentation
+  * Removed functionality dependent on NSIDC internal systems
+* 0.0.1
+  * Initial release
+
 
 ## Versioning
 
