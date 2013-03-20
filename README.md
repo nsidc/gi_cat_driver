@@ -59,15 +59,22 @@ Rubydoc API documentation is available at http://rubydoc.info/gems/gi_cat_driver
 * 0.0.1
   * Initial release
 
-
 ## Versioning
 
 This gem follows the principles of [Semantic Versioning 2.0.0](http://semver.org/)
 
 ## Releasing
 
-1. Commit all code to master branch
-2. ????????????
+1. Make sure to increment the version number as suggested by the Semantic Versioning specification
+2. Commit changes into the master branch of the repo on sourcecontrol.nsidc.org
+3. The commit will trigger a Jenkins job to run the tests
+4. When the changes are ready to be released, you can either push the gem manually or run a job in Jenkins
+4a. To push manually: You must have permissions on the GitHub repository through the NSIDC organization and you must be an owner of the 'gi_cat_driver'a gem on RubyGems.
+Once you have the credentials, run the command 'rake release' to tag the version number in the Git revision history and publish on RubyGems.
+To push to GitHub make sure you have the remotes configured (run 'git remote -v' to list available remotes. To add the GitHub repository to your remotes, run 'git remote add github https://github.com/nsidc/gi_cat_driver.git')
+4b: Using Jenkins: Run the job named 'GI-Cat_(gem)_Deploy_gi_cat_driver'
+
+NOTE: RubyGems will not allow you to release the same version of a gem more than once.
 
 ## Contributing
 
