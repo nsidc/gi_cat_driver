@@ -38,10 +38,24 @@ gi_cat.enable_profile "MY_PROFILE_NAME"
 
 ## Documentation
 
-Documentation is available at http://nsidc.github.com/gi_cat_driver/
+Annotated source code documentation is available at http://nsidc.github.com/gi_cat_driver/
+
+Rubydoc API documentation is available at http://rubydoc.info/gems/gi_cat_driver/
+
+## Version History
+
+* 0.0.8
+  * Something
+  * Something else
 
 ## Versioning
+
 This gem follows the principles of [Semantic Versioning 2.0.0](http://semver.org/)
+
+## Releasing
+
+1. Commit all code to master branch
+2. ????????????
 
 ## Contributing
 
@@ -59,4 +73,5 @@ GI-Cat Driver is licensed under the MIT license. See [LICENSE.txt][license].
 
 ## Credit
 
-This software was developed by the National Snow and Ice Data Center, sponsored by the National Science Foundation grant number OPP-10-16048.
+This software was developed by the National Snow and Ice Data Center,
+sponsored by the National Science Foundation grant number OPP-10-16048.

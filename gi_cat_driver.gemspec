@@ -6,8 +6,8 @@ require 'gi_cat_driver/version'
 Gem::Specification.new do |spec|
   spec.name          = "gi_cat_driver"
   spec.version       = GiCatDriver::VERSION
-  spec.authors       = ["Stuart Reed"]
-  spec.email         = ["stuart.reed@nsidc.org"]
+  spec.authors       = ["Stuart Reed", "Miao Liu"]
+  spec.email         = ["stuart.reed@nsidc.org", "miao.liu@nsidc.org"]
   spec.description   = %q{Configure and control deployed instances of GI-Cat.}
   spec.summary       = %q{Configure and control deployed instances of GI-Cat.}
   spec.homepage      = ""
