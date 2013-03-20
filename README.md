@@ -1,6 +1,12 @@
 # GI-Cat Driver
 
-The GI-Cat driver is a ruby wrapper for GI-Cat services.  Remotely configure administration options for a GI-Cat instance.
+The GI-Cat driver is a ruby API wrapper for GI-Cat services.  Remotely configure administration options for a GI-Cat instance.
+
+## Requirements
+
+* Ruby 1.9.3
+* rest-client
+* nokogiri
 
 ## Installation
 
@@ -16,24 +22,26 @@ Or install it yourself as:
 
     $ gem install gi_cat_driver
 
-## Usage
+## Quick Start Guide
 
-Assuming you have a GI-Cat application running at http://www.company.com/api/gi-cat/ 
-and an administrative login of username='admin', password='password' create a new GiCat
-to start using the gem.
+Connect to an existing GI-Cat instance using the following code:
 
-```ruby
-gi_cat = GiCatDriver::GiCat.new('http://www.company.com/api/gi-cat', 'admin', 'password')
+```Ruby
+gi_cat = GiCatDriver::GiCat.new("http://www.mycompany.com/api/gi-cat/", ADMIN_USERNAME, ADMIN_PASSWORD)
 ```
-Note you must provide a URL to a running GI-Cat instance as well as the administrator username and password.
 
-## API Documentation
+The gi_cat variable can now be used to access various methods to control GI-Cat:
 
-Main API methods are
-
-```ruby
-GiCatDriver
+```Ruby
+gi_cat.enable_profile "MY_PROFILE_NAME"
 ```
+
+## Documentation
+
+Documentation is available at http://nsidc.github.com/gi_cat_driver/
+
+## Versioning
+This gem follows the principles of [Semantic Versioning 2.0.0](http://semver.org/)
 
 ## Contributing
 
