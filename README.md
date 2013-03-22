@@ -68,15 +68,13 @@ This gem follows the principles of [Semantic Versioning 2.0.0](http://semver.org
 ## Releasing
 
 1. Make sure to increment the version number (See the section about versioning above) and append a description of your changes to the Version History section above.
-2. Commit changes into the master branch of the repo on sourcecontrol.nsidc.org
-3. The commit will trigger a Jenkins job to run the tests
-4. When the changes are ready to be released, you can either push the gem manually or run a job in Jenkins
-4a. To push manually: You must have permissions on the GitHub repository through the NSIDC organization and you must be an owner of the 'gi_cat_driver'a gem on RubyGems.
-Once you have the credentials, run the command 'rake release' to tag the version number in the Git revision history and publish on RubyGems.
-To push to GitHub make sure you have the remotes configured (run 'git remote -v' to list available remotes. To add the GitHub repository to your remotes, run 'git remote add github https://github.com/nsidc/gi_cat_driver.git')
-4b: Using Jenkins: Run the job named 'GI-Cat_(gem)_Deploy_gi_cat_driver'
-
-NOTE: RubyGems will not allow you to release the same version of a gem more than once.
+2. Commit changes into the master branch of the repo on 'sourcecontrol.nsidc.org'. This will trigger a Jenkins job to run the tests.
+4. Assuming the change is merged with the master branch and you are ready to release them to GitHub run 'git push https://github.com/nsidc/gi_cat_driver.git master'
+      * There is a Jenkins job that can push master to GitHub if you are confident you wont have merge conflicts.
+      * Note: You must have permissions on the GitHub repository through the NSIDC organization.
+5. Make sure to release the new gem version to RubyGems by running 'rake release'
+      * Note: You must be configured as an owner of the 'gi_cat_driver'a gem on RubyGems.
+      * Also Note: RubyGems will not allow you to release the same version of a gem more than once.
 
 ## Contributing
 
