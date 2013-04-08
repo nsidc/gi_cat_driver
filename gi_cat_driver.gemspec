@@ -18,7 +18,7 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "rest-client", "~> 1.6.7"
+  spec.add_dependency "faraday", "~> 0.8.7"
   spec.add_dependency "nokogiri", "~> 1.5.6"
 
   spec.add_development_dependency "bundler", "~> 1.3"
@@ -28,4 +28,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "mustache", "~> 0.99.4"
   spec.add_development_dependency "redcarpet", "~> 2.2.2"
   spec.add_development_dependency "rocco", "~> 0.8.2"
+  spec.add_development_dependency "webmock", "~> 1.11.0"
 end

@@ -1,9 +1,9 @@
 # The GI-Cat Driver controls GI-Cat configurations and actions using HTTP requests.
-# 
+#
 require "gi_cat_driver/version"
 require "gi_cat_driver/esip_opensearch_query_builder"
 require "open-uri"
-require "rest-client"
+require "faraday"
 require "base64"
 require 'nokogiri'
 require 'timeout'
@@ -25,7 +25,8 @@ module GiCatDriver
       @admin_password = password
 
       # Set up a constant containing the standard request headers
-      self.class.const_set("STANDARD_HEADERS",{ :content_type => "application/xml", :Authorization => self.basic_auth_string })
+      self.class.const_set("STANDARD_HEADERS", { :content_type => "application/xml" })
+      self.class.const_set("AUTHORIZATION_HEADERS", { :content_type => "*/*", :Accept => "application/xml" :Authorization => self.basic_auth_string })
     end
 
     # Basic Authorization used in the request headers
@@ -35,19 +36,15 @@ module GiCatDriver
 
     # Check whether GI-Cat is accessible
     def is_running?
-      open(@base_url).status[0] == "200"
+      Faraday.get(@base_url + "/").status == 200
     end
 
     # Retrieve the ID for a profile given the name
     # Returns an integer ID reference to the profile
     def find_profile_id( profile_name )
-      get_profiles_request = "#{@base_url}/services/conf/brokerConfigurations?nameRepository=gicat"
-      modified_headers = STANDARD_HEADERS.merge({
-        :content_type => "*/*",
-        :Accept => 'application/xml'
-      })
-      xml_doc = RestClient.get(get_profiles_request, modified_headers)
-      profile = parse_profile_element(profile_name, xml_doc)
+      conn = Faraday.new(:uri => @base_url, :headers => AUTHORIZATION_HEADERS)
+      response = conn.get @base_url + '/services/conf/brokerConfigurations', :nameRepository => 'gicat'
+      profile = parse_profile_element(profile_name, response.body)
 
       return (profile.empty? ? nil : profile.attr('id').value)
     end
@@ -58,14 +55,14 @@ module GiCatDriver
       raise "The specified profile could not be found." if profile_id.nil?
       activate_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}?opts=active"
 
-      RestClient.get(activate_profile_request, STANDARD_HEADERS)
+      Faraday.get(activate_profile_request, STANDARD_HEADERS)
     end
 
     # Returns an integer ID reference to the active profile
     def get_active_profile_id
       active_profile_request = "#{@base_url}/services/conf/giconf/configuration"
 
-      return RestClient.get(active_profile_request, STANDARD_HEADERS)
+      return Faraday.get(active_profile_request, STANDARD_HEADERS)
     end
 
     # Enable Lucene indexes for GI-Cat search results
@@ -106,15 +103,14 @@ module GiCatDriver
 
     private
 
-    # Toggle lucene indexes on when enabled is true, off when false
     def set_lucene_enabled( enabled )
       enable_lucene_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}/luceneEnabled"
-      RestClient.put(enable_lucene_request,
+      Faraday.put(enable_lucene_request,
         enabled.to_s,
         STANDARD_HEADERS)
 
       activate_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}?opts=active"
-      RestClient.get(activate_profile_request,
+      Faraday.get(activate_profile_request,
         STANDARD_HEADERS)
     end
 
@@ -148,7 +144,7 @@ module GiCatDriver
 
     # Harvest from specified resource
     def harvest_resource_for_active_configuration(harvesterid, harvestername = "n/a")
-      RestClient.get(
+      Faraday.get(
         "#{@base_url}/services/conf/brokerConfigurations/#{self.get_active_profile_id}/harvesters/#{harvesterid}/start",
         STANDARD_HEADERS) do |response, request, result, &block|
           case response.code
@@ -182,9 +178,9 @@ module GiCatDriver
 
         rnum=rand
         request = @base_url + "/services/conf/giconf/status?id=#{harvesterid}&rand=#{rnum}"
-        response = RestClient.get request
 
-        responsexml = Nokogiri::XML::Reader(response)
+        response = Faraday.get request
+        responsexml = Nokogiri::XML::Reader(response.body)
         responsexml.each do |node|
           if node.name == "status" && !node.inner_xml.empty?
             status = harvest_status(node.inner_xml, harvestername)

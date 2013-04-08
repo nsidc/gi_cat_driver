@@ -1,49 +1,45 @@
 require 'spec_helper'
 require 'gi_cat_driver'
+require 'webmock/rspec'
 
 describe GiCatDriver do
   before(:each) do
     @base_url = "http://www.somecompany.com/"
-    @gi_cat = GiCatDriver::GiCat.new(@base_url, "admin", "abcd123$")
   end
 
-#  describe "Standard requests" do
-    #it "Is able to send requests to GI-Cat" do
-      #@gi_cat.is_running?.should be_true
-    #end
+  describe "Standard requests" do
+    it "can check that GI-Cat is running" do
+      @gi_cat = GiCatDriver::GiCat.new(@base_url, "user", "pass")
+      stub_request(:get, @base_url).with(:headers => {'Accept'=>'*/*', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'User-Agent'=>'Faraday v0.8.7'}).to_return(:status => 200, :body => "", :headers => {})
+      expect(@gi_cat.is_running?).to be_true
+      a_request(:get, @base_url).should have_been_made.once
+    end
+  end
 
-#   it "Sends requests with basic header information" do
-#      @gi_cat.standard_headers[:content_type].should eq "application/xml"
-#    end
-#
-#    it "Can authorize access using the Authorization header" do
-#      @gi_cat.standard_headers[:Authorization].should eq "Basic YWRtaW46YWJjZDEyMyQ="
-#    end
-#  end
+  describe "Authorization" do
+    subject { GiCatDriver::GiCat.new(@base_url, "user", "pass").basic_auth_string }
 
-  #describe "Profile management" do
-    #it "Retrieves a profile id given the name" do
-      #@gi_cat.find_profile_id("NORWEGIAN_CISL_NSIDC_EOL").should eq "1"
-    #end
+    auth_string = "Basic " + Base64.encode64("user:pass").rstrip
+    it { should eq(auth_string) }
+  end
 
-    #it "Throws an error if the profile cannot be found" do
-      #@gi_cat.find_profile_id("notaprofile").should be_nil
-    #end
+  describe "Authorized requests" do
+    before do
+      @gi_cat = GiCatDriver::GiCat.new("http://www.testurl.com", "admin", "pass")
+    end
 
-    #it "Enables a profile given the name" do
-      #@gi_cat.enable_profile("NORWEGIAN_CISL_NSIDC_EOL")
-      #@gi_cat.get_active_profile_id.should eq "1"
-    #end
+    subject {
+      @gi_cat.authorization_headers
+    }
 
-    #it "Does not enable a profile if the profile cannot be found" do
-      #expect { @gi_cat.enable_profile("notaprofile") }.to raise_error("The specified profile could not be found.")
-    #end
-  #end
+    it { should include(:Authorization => @gi_cat.basic_auth_string) }
 
-  #describe "Lucene Indexing" do
-    #it "Enables Lucene for the active profile" do
-      #@gi_cat.enable_lucene
-      #@gi_cat.is_lucene_enabled?.should be_true
-    #end
-  #end
+    it "can access a protected service endpoint using the Authorization header" do
+      request_url = "http://admin:pass@www.testurl.com/services/conf/brokerConfigurations"
+      stub_request(:get, request_url).with(:headers => {'Accept'=>'application/xml', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'User-Agent'=>'Faraday v0.8.7'}, :query => {:nameRepository => "gicat"}).to_return(:status => 200, :body => File.new("fixtures/brokerConfigurations.xml"), :headers => {})
+      profile_id = @gi_cat.find_profile_id("some_profile")
+      a_request(:get, request_url).with(:query => {:nameRepository => "gicat"}).should have_been_made.once
+      expect(profile_id).to eq("1")
+    end
+  end
 end
