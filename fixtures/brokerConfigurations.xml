@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<brokerConfigurations xmlns="http://imaa.cnr.it/sdi/services/7.0/configurationMessages/schema">
+  <brokerConfiguration id="1" name="some_profile">
+    <component>
+      <id>UUID-6c89ab7d-82aa-446c-902e-0b1f6e412a45</id>
+      <type>Distributor</type>
+    </component>
+  </brokerConfiguration>
+</brokerConfigurations>
