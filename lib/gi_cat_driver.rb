@@ -42,10 +42,13 @@ module GiCatDriver
     # Retrieve the ID for a profile given the name
     # Returns an integer ID reference to the profile
     def find_profile_id( profile_name )
-      conn = Faraday.new(:uri => @base_url, :headers => AUTHORIZATION_HEADERS)
-      response = conn.get @base_url + '/services/conf/brokerConfigurations', :nameRepository => 'gicat'
+      response = Faraday.get do |req|
+        req.url @base_url + '/services/conf/brokerConfigurations', :nameRepository => 'gicat'
+        req.headers = AUTHORIZATION_HEADERS
+      end
       profile = parse_profile_element(profile_name, response.body)
 
+      raise "The profile '" + profile_name + "' does not exist!" if profile.empty?
       return (profile.empty? ? nil : profile.attr('id').value)
     end
 

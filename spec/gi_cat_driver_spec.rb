@@ -7,39 +7,57 @@ describe GiCatDriver do
     @base_url = "http://www.somecompany.com/"
   end
 
-  describe "Standard requests" do
+  describe "requests" do
     it "can check that GI-Cat is running" do
       @gi_cat = GiCatDriver::GiCat.new(@base_url, "user", "pass")
-      stub_request(:get, @base_url).with(:headers => {'Accept'=>'*/*', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'User-Agent'=>'Faraday v0.8.7'}).to_return(:status => 200, :body => "", :headers => {})
-      expect(@gi_cat.is_running?).to be_true
+      stub_request(:get, @base_url)
+        .with(:headers => {
+          'Accept'=>'*/*', 
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
+          'User-Agent'=>'Faraday v0.8.7'
+        }).to_return(:status => 200, :body => "", :headers => {})
+
+      running = @gi_cat.is_running?
+
+      expect(running).to be_true
       a_request(:get, @base_url).should have_been_made.once
     end
   end
 
-  describe "Authorization" do
-    subject { GiCatDriver::GiCat.new(@base_url, "user", "pass").basic_auth_string }
+  describe "authorized requests" do
+    it "can retrieve a profile id given a profile name" do
+      gi_cat = GiCatDriver::GiCat.new(@base_url, "admin", "pass")
+      request_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations"
+      stub_request(:get,request_url)
+        .with(:headers => {
+          'Accept'=>'application/xml', 
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
+          'User-Agent'=>'Ruby', 
+          'Content-Type'=>'*/*'
+        }, :query => {:nameRepository => "gicat"})
+        .to_return(:status => 200, :body => File.new("fixtures/brokerConfigurations.xml"), :headers => {})
 
-    auth_string = "Basic " + Base64.encode64("user:pass").rstrip
-    it { should eq(auth_string) }
-  end
+      # Find id for 'some_profile'
+      profile_id = gi_cat.find_profile_id("some_profile")
 
-  describe "Authorized requests" do
-    before do
-      @gi_cat = GiCatDriver::GiCat.new("http://www.testurl.com", "admin", "pass")
-    end
-
-    subject {
-      @gi_cat.authorization_headers
-    }
-
-    it { should include(:Authorization => @gi_cat.basic_auth_string) }
-
-    it "can access a protected service endpoint using the Authorization header" do
-      request_url = "http://admin:pass@www.testurl.com/services/conf/brokerConfigurations"
-      stub_request(:get, request_url).with(:headers => {'Accept'=>'application/xml', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'User-Agent'=>'Faraday v0.8.7'}, :query => {:nameRepository => "gicat"}).to_return(:status => 200, :body => File.new("fixtures/brokerConfigurations.xml"), :headers => {})
-      profile_id = @gi_cat.find_profile_id("some_profile")
       a_request(:get, request_url).with(:query => {:nameRepository => "gicat"}).should have_been_made.once
       expect(profile_id).to eq("1")
+    end
+
+    it "to find a profile id throws an error if the profile cannot be found" do
+      gi_cat = GiCatDriver::GiCat.new(@base_url, "admin", "pass")
+      request_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations"
+      stub_request(:get,request_url)
+        .with(:headers => {
+          'Accept'=>'application/xml', 
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
+          'User-Agent'=>'Ruby', 
+          'Content-Type'=>'*/*'
+        }, :query => {:nameRepository => "gicat"})
+        .to_return(:status => 200, :body => File.new("fixtures/brokerConfigurations.xml"), :headers => {})
+
+      # Lambda hack to catch error http://stackoverflow.com/questions/2359439/expecting-errors-in-rspec-tests
+      lambda {gi_cat.find_profile_id "bad_name"}.should raise_error(RuntimeError)
     end
   end
 end
