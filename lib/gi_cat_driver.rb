@@ -49,7 +49,7 @@ module GiCatDriver
       profile = parse_profile_element(profile_name, response.body)
 
       raise "The profile '" + profile_name + "' does not exist!" if profile.empty?
-      return (profile.empty? ? nil : profile.attr('id').value)
+      return profile.attr('id').value
     end
 
     # Enable a profile with the specified name
