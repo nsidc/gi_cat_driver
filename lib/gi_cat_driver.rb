@@ -48,25 +48,27 @@ module GiCatDriver
       end
 
       profile_id = parse_profile_element(profile_name, response.body)
-      raise "The profile '" + profile_name + "' does not exist!" if profile_id.empty?
 
-      return profile_id.attr('id').value
-    end
-
-    # Enable a profile with the specified name
-    def enable_profile( profile_name )
-      profile_id = find_profile_id(profile_name)
-
-      activate_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}?opts=active"
-
-      Faraday.get(activate_profile_request, STANDARD_HEADERS)
+      return profile_id
     end
 
     # Returns an integer ID reference to the active profile
     def get_active_profile_id
-      active_profile_request = "#{@base_url}/services/conf/giconf/configuration"
+      response = Faraday.get do |req|
+        req.url "#{@base_url}/services/conf/giconf/configuration"
+        req.headers = standard_headers
+      end
 
-      return Faraday.get(active_profile_request, STANDARD_HEADERS)
+      profile_id = parse_profile_id(response.body)
+      return profile_id
+    end
+
+    # Enable a profile with the specified name
+    def enable_profile( profile_name )
+      Faraday.get do |req|
+        req.url "#{@base_url}/services/conf/brokerConfigurations/#{find_profile_id(profile_name)}?opts=active"
+        req.headers = STANDARD_HEADERS
+      end
     end
 
     # Enable Lucene indexes for GI-Cat search results
@@ -116,13 +118,6 @@ module GiCatDriver
       activate_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}?opts=active"
       Faraday.get(activate_profile_request,
         STANDARD_HEADERS)
-    end
-
-    # Retrieve the profile element using the name
-    def parse_profile_element( profile_name, xml_doc )
-      configs = Nokogiri.XML(xml_doc)
-
-      return configs.css("brokerConfiguration[name=#{profile_name}]")
     end
 
     # Retrive the distributor id given a profile id
@@ -211,6 +206,23 @@ module GiCatDriver
       rescue Timeout::Error
         puts "Warning: re-harvest is time out(#{waitmax} seconds, we are going to reuse the previous harvest results"
       end
+    end
+
+    def parse_profile_element( profile_name, xml_doc )
+      configs = Nokogiri.XML(xml_doc)
+      profile = configs.css("brokerConfiguration[name=#{profile_name}]")
+      raise "The profile '" + profile_name + "' does not exist!" if profile.empty?
+
+      return profile.attr('id').value
+    end
+
+    def parse_profile_id( xml_doc )
+      configs = Nokogiri.XML(xml_doc)
+      profile = configs.css("brokerConfiguration")
+      profile_id = profile.attr('id').value
+      raise "The profile '" + profile_name + "' does not exist!" if profile_id.empty?
+
+      return profile_id
     end
 
   end
