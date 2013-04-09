@@ -46,16 +46,17 @@ module GiCatDriver
         req.url @base_url + '/services/conf/brokerConfigurations', :nameRepository => 'gicat'
         req.headers = AUTHORIZATION_HEADERS
       end
-      profile = parse_profile_element(profile_name, response.body)
 
-      raise "The profile '" + profile_name + "' does not exist!" if profile.empty?
-      return profile.attr('id').value
+      profile_id = parse_profile_element(profile_name, response.body)
+      raise "The profile '" + profile_name + "' does not exist!" if profile_id.empty?
+
+      return profile_id.attr('id').value
     end
 
     # Enable a profile with the specified name
     def enable_profile( profile_name )
       profile_id = find_profile_id(profile_name)
-      raise "The specified profile could not be found." if profile_id.nil?
+
       activate_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}?opts=active"
 
       Faraday.get(activate_profile_request, STANDARD_HEADERS)
