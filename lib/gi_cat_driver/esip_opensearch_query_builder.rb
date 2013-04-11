@@ -9,17 +9,17 @@ module EsipOpensearchQueryBuilder
   end
 
   def self.get_query_string( query_params={} )
-    all_params = { 
-      :si => '', 
-      :ct => '', 
-      :st => '', 
-      :bbox => '', 
-      :rel => '', 
-      :loc => '', 
-      :ts => '', 
-      :te => '', 
-      :lac => '', 
-      :luc => '', 
+    all_params = {
+      :si => '',
+      :ct => '',
+      :st => '',
+      :bbox => '',
+      :rel => '',
+      :loc => '',
+      :ts => '',
+      :te => '',
+      :lac => '',
+      :luc => '',
       :gdc => '',
       :outputFormat => ''
     }.merge(query_params)

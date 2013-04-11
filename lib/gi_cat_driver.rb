@@ -13,7 +13,7 @@ module GiCatDriver
     ATOM_NAMESPACE = { "atom" => "http://www.w3.org/2005/Atom" }
     RELEVANCE_NAMESPACE = { "relevance" => "http://a9.com/-/opensearch/extensions/relevance/1.0/" }
     attr_accessor :base_url, :harvestersid_array, :harvestersinfo_array
-    
+
     def initialize( url, username, password )
       @base_url = url.sub(/\/+$/, '')
       @admin_username = username
@@ -66,7 +66,7 @@ module GiCatDriver
 
       RestClient.get(activate_profile_request, standard_headers)
     end
-    
+
     # Retrive the distributor id given a profile id
     def get_active_profile_distributor_id(id)
       active_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{id}"
@@ -98,7 +98,7 @@ module GiCatDriver
     def enable_lucene
       set_lucene_enabled true
     end
-    
+
     # Disable Lucene indexes for GI-Cat search results
     def disable_lucene
       set_lucene_enabled false
@@ -128,18 +128,18 @@ module GiCatDriver
 
       return result_scores.count > 0
     end
-    
+
     # Build the harvester resource id array
     def add_harvester_resource_id(resource_id)
       @harvestersid_array.push(resource_id)
       @harvestersinfo_array.push(:id => resource_id, :resource_title => "default")
     end
-    
+
     # Add the resource to harvester
     def add_harvester_resource(resource)
       @harvestersinfo_array.push(resource)
     end
-    
+
     # Remove the harvester resource id array
     def clear_resource_id
       @harvestersinfo_array.clear
@@ -173,7 +173,7 @@ module GiCatDriver
         rnum=rand
         request = @base_url + "/services/conf/giconf/status?id=#{harvesterid}&rand=#{rnum}"
         response = RestClient.get request
-   
+
         responsexml = Nokogiri::XML::Reader(response)
         harvest_status = "sth"
         responsexml.each do |node|
@@ -185,7 +185,7 @@ module GiCatDriver
         end
       end
     end
-    
+
     # Run till harvest all the resources are completed or time out
     # The default timeout is 300 seconds (5 minutes)
     def confirm_harvest_done(waitmax=300)
@@ -200,7 +200,7 @@ module GiCatDriver
         puts "Warning: re-harvest is time out(#{waitmax} seconds, we are going to reuse the previous harvest results"
       end
     end
-    
+
     # Parsing and handle the harvest status
     def handle_harvest_status(harvest_status, harvestername="default")
       timestamp = Time.now
@@ -214,6 +214,6 @@ module GiCatDriver
         return 1
       end
     end
-    
+
   end
 end
