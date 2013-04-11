@@ -20,6 +20,7 @@ module EsipOpensearchQueryBuilder
       :te => '', 
       :lac => '', 
       :luc => '', 
+      :gdc => '',
       :outputFormat => ''
     }.merge(query_params)
 
