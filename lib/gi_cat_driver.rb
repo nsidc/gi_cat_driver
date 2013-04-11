@@ -52,12 +52,6 @@ module GiCatDriver
       return (profile.empty? ? nil : profile.attr('id').value)
     end
 
-    def parse_profile_element( profile_name, xml_doc )
-      configs = Nokogiri.XML(xml_doc)
-
-      return configs.css("brokerConfiguration[name=#{profile_name}]")
-    end
-
     # Enable a profile with the specified name
     def enable_profile( profile_name )
       profile_id = find_profile_id(profile_name)
@@ -65,14 +59,6 @@ module GiCatDriver
       activate_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}?opts=active"
 
       RestClient.get(activate_profile_request, standard_headers)
-    end
-
-    # Retrive the distributor id given a profile id
-    def get_active_profile_distributor_id(id)
-      active_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{id}"
-      response = RestClient.get(active_profile_request, standard_headers)
-      id = Nokogiri::XML(response).css("component id").text
-      return id
     end
 
     # Given a profile id, put all the associated resource id and title into harvest info array
@@ -102,17 +88,6 @@ module GiCatDriver
     # Disable Lucene indexes for GI-Cat search results
     def disable_lucene
       set_lucene_enabled false
-    end
-
-    def set_lucene_enabled( enabled )
-      enable_lucene_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}/luceneEnabled"
-      RestClient.put(enable_lucene_request,
-        enabled.to_s,
-        standard_headers)
-
-      activate_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}?opts=active"
-      RestClient.get(activate_profile_request,
-        standard_headers)
     end
 
     # Find out whether Lucene indexing is turned on for the current profile
@@ -213,6 +188,35 @@ module GiCatDriver
       else 
         return 1
       end
+    end
+
+    private
+
+    # Retrieve the profile element using the name
+    def parse_profile_element( profile_name, xml_doc )
+      configs = Nokogiri.XML(xml_doc)
+
+      return configs.css("brokerConfiguration[name=#{profile_name}]")
+    end
+
+    # Retrive the distributor id given a profile id
+    def get_active_profile_distributor_id(id)
+      active_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{id}"
+      response = RestClient.get(active_profile_request, standard_headers)
+      id = Nokogiri::XML(response).css("component id").text
+      return id
+    end
+
+    # Toggle lucene indexes on when enabled is true, off when false
+    def set_lucene_enabled( enabled )
+      enable_lucene_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}/luceneEnabled"
+      RestClient.put(enable_lucene_request,
+        enabled.to_s,
+        standard_headers)
+
+      activate_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}?opts=active"
+      RestClient.get(activate_profile_request,
+        standard_headers)
     end
 
   end
