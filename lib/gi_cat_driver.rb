@@ -19,7 +19,7 @@ module GiCatDriver
       @admin_username = username
       @admin_password = password
       @harvestersid_array = []
-      @harvestersinfo_array = []
+      @harvestersinfo_array = {}
     end
 
     def basic_auth_string
@@ -68,7 +68,7 @@ module GiCatDriver
       response = RestClient.get(harvest_resource_request, standard_headers)
       doc = Nokogiri::XML(response) 
       doc.css("component").each do |component|
-        @harvestersinfo_array.push(:id => component.css("id").text, :resource_title => component.css("title").text)
+        @harvestersinfo_array[component.css("id").text.to_sym] = component.css("title").text
       end
     end
 
@@ -104,60 +104,22 @@ module GiCatDriver
       return result_scores.count > 0
     end
 
-    # Build the harvester resource id array
+    # Build the harvester resource id 
     def add_harvester_resource_id(resource_id)
       @harvestersid_array.push(resource_id)
-      @harvestersinfo_array.push(:id => resource_id, :resource_title => "default")
+      @harvestersinfo_array[resource_id.to_sym] = "default"
     end
 
-    # Add the resource to harvester
-    def add_harvester_resource(resource)
-      @harvestersinfo_array.push(resource)
-    end
-
-    # Remove the harvester resource id array
-    def clear_resource_id
+    # Remove the harvester resourceinfo array
+    def clear_resource
       @harvestersinfo_array.clear
-    end
-
-    # Harvest from specified resource
-    def harvest_resource_for_active_configuration(harvesterid, harvestername = "n/a")
-      RestClient.get(
-        "#{@base_url}/services/conf/brokerConfigurations/#{self.get_active_profile_id}/harvesters/#{harvesterid}/start",
-        standard_headers){ |response, request, result, &block|
-          case response.code
-            when 200
-              puts "#{Time.now}: Initiate harvesting GI-Cat resource #{harvestername}. Please wait a couple minutes for the process to complete."
-            else
-              raise "Failed to initiate harvesting GI-Cat resource #{harvestername}."
-              response.return!(request, result, &block)
-            end
-        }
     end
 
     # Harvest all resource in the active profile
     def harvest_all_resources_for_active_configuration
-      @harvestersinfo_array.each do |harvester|
-        harvest_resource_for_active_configuration(harvester[:id], harvester[:resource_title])
-      end
-    end
-
-    # Run till the harvest of a resource is completed
-    def havest_request_is_done(harvesterid, harvestername="n/a")
-      while(1) do
-        rnum=rand
-        request = @base_url + "/services/conf/giconf/status?id=#{harvesterid}&rand=#{rnum}"
-        response = RestClient.get request
-
-        responsexml = Nokogiri::XML::Reader(response)
-        harvest_status = "sth"
-        responsexml.each do |node|
-          if node.name == "status" && !node.inner_xml.empty? 
-            if(handle_harvest_status(node.inner_xml, harvestername) != 1)
-              return
-            end
-          end
-        end
+      get_harvest_resources(get_active_profile_id)
+      @harvestersinfo_array.each do |harvester_id, harvester_title|
+        harvest_resource_for_active_configuration(harvester_id.to_s, harvester_title)
       end
     end
 
@@ -167,26 +129,12 @@ module GiCatDriver
       begin
         puts "Info: Max wait time (timeout) for current profile is set to #{waitmax} seconds"
         Timeout::timeout(waitmax) do
-          @harvestersinfo_array.each  do |harvesterinfo|
-            havest_request_is_done(harvesterinfo[:id], harvesterinfo[:resource_title])
+          @harvestersinfo_array.each  do |harvester_id, harvester_title|
+            havest_request_is_done(harvester_id.to_s, harvester_title)
           end
         end
       rescue Timeout::Error
         puts "Warning: re-harvest is time out(#{waitmax} seconds, we are going to reuse the previous harvest results"
-      end
-    end
-
-    # Parsing and handle the harvest status
-    def handle_harvest_status(harvest_status, harvestername="default")
-      timestamp = Time.now
-      puts "#{Time.now}: Harvest #{harvestername} status: #{harvest_status}"
-      case harvest_status
-      when /completed/
-        return 0
-      when /error/
-        fail "Error harvesting the resource #{harvestername}: #{harvest_status}"
-      else 
-        return 1
       end
     end
 
@@ -219,5 +167,55 @@ module GiCatDriver
         standard_headers)
     end
 
+    # Harvest from specified resource
+    def harvest_resource_for_active_configuration(harvesterid, harvestername = "n/a")
+      RestClient.get(
+        "#{@base_url}/services/conf/brokerConfigurations/#{self.get_active_profile_id}/harvesters/#{harvesterid}/start",
+        standard_headers){ |response, request, result, &block|
+          case response.code
+            when 200
+              puts "#{Time.now}: Initiate harvesting GI-Cat resource #{harvestername}. Please wait a couple minutes for the process to complete."
+            else
+              raise "Failed to initiate harvesting GI-Cat resource #{harvestername}."
+              response.return!(request, result, &block)
+            end
+        }
+    end
+
+    # Parsing and handle the harvest status
+     def handle_harvest_status(harvest_status, harvestername="default")
+       timestamp = Time.now
+       puts "#{Time.now}: Harvest #{harvestername} status: #{harvest_status}"
+       case harvest_status
+       when /completed/
+         return :completed
+       when /error/
+         return :error
+       else 
+         return :pending
+       end
+     end
+     
+    # Run till the harvest of a resource is completed
+    def havest_request_is_done(harvesterid, harvestername="n/a")
+      while(1) do
+        rnum=rand
+        request = @base_url + "/services/conf/giconf/status?id=#{harvesterid}&rand=#{rnum}"
+        response = RestClient.get request
+    
+        responsexml = Nokogiri::XML::Reader(response)
+        responsexml.each do |node|
+          if node.name == "status" && !node.inner_xml.empty? 
+            case handle_harvest_status(node.inner_xml, harvestername) 
+            when :error
+              fail "Error harvesting the resource #{harvestername}: #{harvest_status}"
+            when :completed
+              puts "Harvest succeed"
+              return
+            end
+          end
+        end
+      end
+    end
   end
 end
