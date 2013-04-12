@@ -228,7 +228,7 @@ Returns true if Lucene is turned on</p>
       <span class="n">harvestersinfo_array</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">harvester_id</span><span class="p">,</span> <span class="n">harvester_title</span><span class="o">|</span>
         <span class="n">harvest_resource_for_active_configuration</span><span class="p">(</span><span class="n">harvester_id</span><span class="o">.</span><span class="n">to_s</span><span class="p">,</span> <span class="n">harvester_title</span><span class="p">)</span>
       <span class="k">end</span>
-      <span class="n">confirm_harvest_done</span><span class="p">(</span><span class="n">harvestersinfo_array</span><span class="p">)</span>
+      <span class="n">confirm_harvest_done</span><span class="p">(</span><span class="n">harvestersinfo_array</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
@@ -307,6 +307,7 @@ Returns true if Lucene is turned on</p>
       <span class="n">harvest_resource_request</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@base_url</span><span class="si">}</span><span class="s2">/services/conf/brokerConfigurations/</span><span class="si">#{</span><span class="n">profile_id</span><span class="si">}</span><span class="s2">/distributors/</span><span class="si">#{</span><span class="nb">id</span><span class="si">}</span><span class="s2">&quot;</span>
       <span class="n">response</span> <span class="o">=</span> <span class="no">RestClient</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">harvest_resource_request</span><span class="p">,</span> <span class="no">STANDARD_HEADERS</span><span class="p">)</span>
       <span class="n">doc</span> <span class="o">=</span> <span class="ss">Nokogiri</span><span class="p">:</span><span class="ss">:XML</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+      <span class="n">harvestersinfo_array</span> <span class="o">=</span> <span class="p">{}</span>
       <span class="n">doc</span><span class="o">.</span><span class="n">css</span><span class="p">(</span><span class="s2">&quot;component&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">component</span><span class="o">|</span>
         <span class="n">harvestersinfo_array</span><span class="o">[</span><span class="n">component</span><span class="o">.</span><span class="n">css</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">to_sym</span><span class="o">]</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="n">css</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span>
       <span class="k">end</span>
@@ -399,7 +400,7 @@ The default timeout is 300 seconds (5 minutes)</p>
 
       </td>
       <td class=code>
-        <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">confirm_harvest_done</span><span class="p">(</span><span class="n">waitmax</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">harvestersinfo_array</span><span class="p">)</span>
+        <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">confirm_harvest_done</span><span class="p">(</span><span class="n">harvestersinfo_array</span><span class="p">,</span> <span class="n">waitmax</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
       <span class="k">begin</span>
         <span class="nb">puts</span> <span class="s2">&quot;Info: Max wait time (timeout) for current profile is set to </span><span class="si">#{</span><span class="n">waitmax</span><span class="si">}</span><span class="s2"> seconds&quot;</span>
         <span class="ss">Timeout</span><span class="p">:</span><span class="ss">:timeout</span><span class="p">(</span><span class="n">waitmax</span><span class="p">)</span> <span class="k">do</span>
