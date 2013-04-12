@@ -1,3 +1,5 @@
+# The GI-Cat Driver controls GI-Cat configurations and actions using HTTP requests.
+# 
 require "gi_cat_driver/version"
 require "gi_cat_driver/esip_opensearch_query_builder"
 require "open-uri"
@@ -6,24 +8,27 @@ require "base64"
 require 'nokogiri'
 require 'timeout'
 
-# The GI-Cat Driver
+#### Public Interface
+
+# 'GiCatDriver::GiCat.new' creates a new GiCat object that provides an interface to many configuration options and controls available in GI-Cat.
+#
 module GiCatDriver
   class GiCat
-  
+
     ATOM_NAMESPACE = { "atom" => "http://www.w3.org/2005/Atom" }
     RELEVANCE_NAMESPACE = { "relevance" => "http://a9.com/-/opensearch/extensions/relevance/1.0/" }
-
     attr_accessor :base_url
 
     def initialize( url, username, password )
       @base_url = url.sub(/\/+$/, '')
       @admin_username = username
       @admin_password = password
-      
+
+      # Set up a constant containing the standard request headers
       self.class.const_set("STANDARD_HEADERS",{ :content_type => "application/xml", :Authorization => self.basic_auth_string })
     end
 
-    # Check whether the URL is accessible
+    # Check whether GI-Cat is accessible
     def is_running?
       open(@base_url).status[0] == "200"
     end
@@ -91,8 +96,11 @@ module GiCatDriver
       confirm_harvest_done(harvestersinfo_array)
     end
 
+    #### Private Methods
+
     private
 
+    # Basic Authorization used in the request headers
     def basic_auth_string
       "Basic " + Base64.encode64("#{@admin_username}:#{@admin_password}").rstrip
     end
@@ -103,12 +111,12 @@ module GiCatDriver
       RestClient.put(enable_lucene_request,
         enabled.to_s,
         STANDARD_HEADERS)
-    
+
       activate_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}?opts=active"
       RestClient.get(activate_profile_request,
         STANDARD_HEADERS)
     end
-    
+
     # Retrieve the profile element using the name
     def parse_profile_element( profile_name, xml_doc )
       configs = Nokogiri.XML(xml_doc)
@@ -164,14 +172,14 @@ module GiCatDriver
         return :pending
       end
     end
-     
+
     # Run till the harvest of a resource is completed
     def havest_request_is_done(harvesterid, harvestername="n/a")
       while(1) do
         rnum=rand
         request = @base_url + "/services/conf/giconf/status?id=#{harvesterid}&rand=#{rnum}"
         response = RestClient.get request
-    
+
         responsexml = Nokogiri::XML::Reader(response)
         responsexml.each do |node|
           if node.name == "status" && !node.inner_xml.empty?
@@ -186,7 +194,7 @@ module GiCatDriver
         end
       end
     end
- 
+
     # Run till harvest all the resources are completed or time out
     # The default timeout is 300 seconds (5 minutes)
     def confirm_harvest_done(waitmax=300, harvestersinfo_array)

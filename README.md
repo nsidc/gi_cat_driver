@@ -71,7 +71,8 @@ This gem follows the principles of [Semantic Versioning 2.0.0](http://semver.org
 ## Releasing
 
 1. Make sure to increment the version number (See the section about versioning above) and append a description of your changes to the Version History section above.
-2. Commit changes into the master branch of the repo on 'sourcecontrol.nsidc.org'. This will trigger a Jenkins job to run the tests.
+2. Generate the documentation with 'rake rocco'.  To update the gh-pages branch on GitHub I suggest cloning that branch as a new project, then copy the generated docs to that new project and push.
+3. Commit changes into the master branch of the repo on 'sourcecontrol.nsidc.org'. This will trigger a Jenkins job to run the tests.
 4. Assuming the change is merged with the master branch and you are ready to release them to GitHub run 'git push https://github.com/nsidc/gi_cat_driver.git master'
       * There is a Jenkins job that can push master to GitHub if you are confident you wont have merge conflicts.
       * Note: You must have permissions on the GitHub repository through the NSIDC organization.
