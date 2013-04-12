@@ -28,6 +28,11 @@ module GiCatDriver
       self.class.const_set("STANDARD_HEADERS",{ :content_type => "application/xml", :Authorization => self.basic_auth_string })
     end
 
+    # Basic Authorization used in the request headers
+    def basic_auth_string
+      "Basic " + Base64.encode64("#{@admin_username}:#{@admin_password}").rstrip
+    end
+
     # Check whether GI-Cat is accessible
     def is_running?
       open(@base_url).status[0] == "200"
@@ -99,11 +104,6 @@ module GiCatDriver
     #### Private Methods
 
     private
-
-    # Basic Authorization used in the request headers
-    def basic_auth_string
-      "Basic " + Base64.encode64("#{@admin_username}:#{@admin_password}").rstrip
-    end
 
     # Toggle lucene indexes on when enabled is true, off when false
     def set_lucene_enabled( enabled )
