@@ -98,7 +98,7 @@ module GiCatDriver
       harvestersinfo_array.each do |harvester_id, harvester_title|
         harvest_resource_for_active_configuration(harvester_id.to_s, harvester_title)
       end
-      confirm_harvest_done(harvestersinfo_array)
+      confirm_harvest_done(harvestersinfo_array, 300)
     end
 
     #### Private Methods
@@ -138,6 +138,7 @@ module GiCatDriver
       harvest_resource_request = "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}/distributors/#{id}"
       response = RestClient.get(harvest_resource_request, STANDARD_HEADERS)
       doc = Nokogiri::XML(response)
+      harvestersinfo_array = {}
       doc.css("component").each do |component|
         harvestersinfo_array[component.css("id").text.to_sym] = component.css("title").text
       end
@@ -197,7 +198,7 @@ module GiCatDriver
 
     # Run till harvest all the resources are completed or time out
     # The default timeout is 300 seconds (5 minutes)
-    def confirm_harvest_done(waitmax=300, harvestersinfo_array)
+    def confirm_harvest_done(harvestersinfo_array, waitmax=300)
       begin
         puts "Info: Max wait time (timeout) for current profile is set to #{waitmax} seconds"
         Timeout::timeout(waitmax) do
