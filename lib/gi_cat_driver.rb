@@ -188,8 +188,10 @@ module GiCatDriver
             when :error
               fail "Error harvesting the resource #{harvestername}: #{harvest_status}"
             when :completed
-              puts "Harvest succeed"
+              puts "Harvest succeed harvesting #{harvestername}"
               return
+            else
+              #place holder for other cases
             end
           end
         end
