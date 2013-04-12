@@ -12,25 +12,16 @@ module GiCatDriver
 
     ATOM_NAMESPACE = { "atom" => "http://www.w3.org/2005/Atom" }
     RELEVANCE_NAMESPACE = { "relevance" => "http://a9.com/-/opensearch/extensions/relevance/1.0/" }
-    attr_accessor :base_url, :harvestersid_array, :harvestersinfo_array
+    STANDARD_HEADERS = {
+            :content_type => "application/xml",
+            :Authorization => basic_auth_string
+          }
+    attr_accessor :base_url
 
     def initialize( url, username, password )
       @base_url = url.sub(/\/+$/, '')
       @admin_username = username
       @admin_password = password
-      @harvestersid_array = []
-      @harvestersinfo_array = {}
-    end
-
-    def basic_auth_string
-      "Basic " + Base64.encode64("#{@admin_username}:#{@admin_password}").rstrip
-    end
-
-    def standard_headers
-      {
-        :content_type => "application/xml",
-        :Authorization => basic_auth_string
-      }
     end
 
     # Check whether the URL is accessible
@@ -42,7 +33,7 @@ module GiCatDriver
     # Returns an integer ID reference to the profile
     def find_profile_id( profile_name )
       get_profiles_request = "#{@base_url}/services/conf/brokerConfigurations?nameRepository=gicat"
-      modified_headers = standard_headers.merge({
+      modified_headers = STANDARD_HEADERS.merge({
         :content_type => "*/*",
         :Accept => 'application/xml'
       })
@@ -58,26 +49,14 @@ module GiCatDriver
       raise "The specified profile could not be found." if profile_id.nil?
       activate_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}?opts=active"
 
-      RestClient.get(activate_profile_request, standard_headers)
+      RestClient.get(activate_profile_request, STANDARD_HEADERS)
     end
 
-    # Given a profile id, put all the associated resource id and title into harvest info array
-    def get_harvest_resources(profile_id)
-      id = get_active_profile_distributor_id(profile_id)
-      harvest_resource_request = "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}/distributors/#{id}"
-      response = RestClient.get(harvest_resource_request, standard_headers)
-      doc = Nokogiri::XML(response) 
-      doc.css("component").each do |component|
-        @harvestersinfo_array[component.css("id").text.to_sym] = component.css("title").text
-      end
-    end
-
-    # Retrieve the ID for the active profile
     # Returns an integer ID reference to the active profile
     def get_active_profile_id
       active_profile_request = "#{@base_url}/services/conf/giconf/configuration"
 
-      return RestClient.get(active_profile_request, standard_headers)
+      return RestClient.get(active_profile_request, STANDARD_HEADERS)
     end
 
     # Enable Lucene indexes for GI-Cat search results
@@ -104,42 +83,33 @@ module GiCatDriver
       return result_scores.count > 0
     end
 
-    # Build the harvester resource id 
-    def add_harvester_resource_id(resource_id)
-      @harvestersid_array.push(resource_id)
-      @harvestersinfo_array[resource_id.to_sym] = "default"
-    end
-
-    # Remove the harvester resourceinfo array
-    def clear_resource
-      @harvestersinfo_array.clear
-    end
-
     # Harvest all resource in the active profile
     def harvest_all_resources_for_active_configuration
-      get_harvest_resources(get_active_profile_id)
-      @harvestersinfo_array.each do |harvester_id, harvester_title|
+      harvestersinfo_array = get_harvest_resources(get_active_profile_id)
+      harvestersinfo_array.each do |harvester_id, harvester_title|
         harvest_resource_for_active_configuration(harvester_id.to_s, harvester_title)
       end
-    end
-
-    # Run till harvest all the resources are completed or time out
-    # The default timeout is 300 seconds (5 minutes)
-    def confirm_harvest_done(waitmax=300)
-      begin
-        puts "Info: Max wait time (timeout) for current profile is set to #{waitmax} seconds"
-        Timeout::timeout(waitmax) do
-          @harvestersinfo_array.each  do |harvester_id, harvester_title|
-            havest_request_is_done(harvester_id.to_s, harvester_title)
-          end
-        end
-      rescue Timeout::Error
-        puts "Warning: re-harvest is time out(#{waitmax} seconds, we are going to reuse the previous harvest results"
-      end
+      confirm_harvest_done(harvestersinfo_array)
     end
 
     private
 
+    def basic_auth_string
+      "Basic " + Base64.encode64("#{@admin_username}:#{@admin_password}").rstrip
+    end
+
+    # Toggle lucene indexes on when enabled is true, off when false
+    def set_lucene_enabled( enabled )
+      enable_lucene_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}/luceneEnabled"
+      RestClient.put(enable_lucene_request,
+        enabled.to_s,
+        STANDARD_HEADERS)
+    
+      activate_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}?opts=active"
+      RestClient.get(activate_profile_request,
+        STANDARD_HEADERS)
+    end
+    
     # Retrieve the profile element using the name
     def parse_profile_element( profile_name, xml_doc )
       configs = Nokogiri.XML(xml_doc)
@@ -150,51 +120,51 @@ module GiCatDriver
     # Retrive the distributor id given a profile id
     def get_active_profile_distributor_id(id)
       active_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{id}"
-      response = RestClient.get(active_profile_request, standard_headers)
+      response = RestClient.get(active_profile_request, STANDARD_HEADERS)
       id = Nokogiri::XML(response).css("component id").text
       return id
     end
 
-    # Toggle lucene indexes on when enabled is true, off when false
-    def set_lucene_enabled( enabled )
-      enable_lucene_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}/luceneEnabled"
-      RestClient.put(enable_lucene_request,
-        enabled.to_s,
-        standard_headers)
-
-      activate_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}?opts=active"
-      RestClient.get(activate_profile_request,
-        standard_headers)
+    # Given a profile id, put all the associated resource id and title into harvest info array
+    def get_harvest_resources(profile_id)
+      id = get_active_profile_distributor_id(profile_id)
+      harvest_resource_request = "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}/distributors/#{id}"
+      response = RestClient.get(harvest_resource_request, STANDARD_HEADERS)
+      doc = Nokogiri::XML(response)
+      doc.css("component").each do |component|
+        harvestersinfo_array[component.css("id").text.to_sym] = component.css("title").text
+      end
+      return harvestersinfo_array
     end
 
     # Harvest from specified resource
     def harvest_resource_for_active_configuration(harvesterid, harvestername = "n/a")
       RestClient.get(
         "#{@base_url}/services/conf/brokerConfigurations/#{self.get_active_profile_id}/harvesters/#{harvesterid}/start",
-        standard_headers){ |response, request, result, &block|
+        STANDARD_HEADERS) do |response, request, result, &block|
           case response.code
-            when 200
-              puts "#{Time.now}: Initiate harvesting GI-Cat resource #{harvestername}. Please wait a couple minutes for the process to complete."
-            else
-              raise "Failed to initiate harvesting GI-Cat resource #{harvestername}."
-              response.return!(request, result, &block)
-            end
-        }
+          when 200
+            puts "#{Time.now}: Initiate harvesting GI-Cat resource #{harvestername}. Please wait a couple minutes for the process to complete."
+          else
+            raise "Failed to initiate harvesting GI-Cat resource #{harvestername}."
+            response.return!(request, result, &block)
+          end
+        end
     end
 
     # Parsing and handle the harvest status
-     def handle_harvest_status(harvest_status, harvestername="default")
-       timestamp = Time.now
-       puts "#{Time.now}: Harvest #{harvestername} status: #{harvest_status}"
-       case harvest_status
-       when /completed/
-         return :completed
-       when /error/
-         return :error
-       else 
-         return :pending
-       end
-     end
+    def harvest_status(status, harvestername="default")
+      timestamp = Time.now
+      puts "#{Time.now}: Harvest #{harvestername} status: #{status}"
+      case status
+      when /completed/
+        return :completed
+      when /error/
+        return :error
+      else
+        return :pending
+      end
+    end
      
     # Run till the harvest of a resource is completed
     def havest_request_is_done(harvesterid, harvestername="n/a")
@@ -205,8 +175,8 @@ module GiCatDriver
     
         responsexml = Nokogiri::XML::Reader(response)
         responsexml.each do |node|
-          if node.name == "status" && !node.inner_xml.empty? 
-            case handle_harvest_status(node.inner_xml, harvestername) 
+          if node.name == "status" && !node.inner_xml.empty?
+            case harvest_status(node.inner_xml, harvestername)
             when :error
               fail "Error harvesting the resource #{harvestername}: #{harvest_status}"
             when :completed
@@ -217,5 +187,21 @@ module GiCatDriver
         end
       end
     end
+ 
+    # Run till harvest all the resources are completed or time out
+    # The default timeout is 300 seconds (5 minutes)
+    def confirm_harvest_done(waitmax=300, harvestersinfo_array)
+      begin
+        puts "Info: Max wait time (timeout) for current profile is set to #{waitmax} seconds"
+        Timeout::timeout(waitmax) do
+          harvestersinfo_array.each do |harvester_id, harvester_title|
+            havest_request_is_done(harvester_id.to_s, harvester_title)
+          end
+        end
+      rescue Timeout::Error
+        puts "Warning: re-harvest is time out(#{waitmax} seconds, we are going to reuse the previous harvest results"
+      end
+    end
+
   end
 end
