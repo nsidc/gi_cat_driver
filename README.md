@@ -44,6 +44,9 @@ Rubydoc API documentation is available at http://rubydoc.info/gems/gi_cat_driver
 
 ## Version History
 
+* 0.1.2
+  * Additional harvesting output
+  * Harvester resources now handled dynamically
 * 0.1.1
   * Added parameter to ESIP OpenSearch query builder
   * Added log output for GI-Cat harvest procedures
