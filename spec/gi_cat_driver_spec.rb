@@ -7,19 +7,19 @@ describe GiCatDriver do
     @gi_cat = GiCatDriver::GiCat.new(@base_url, "admin", "abcd123$")
   end
 
-  describe "Standard requests" do
+#  describe "Standard requests" do
     #it "Is able to send requests to GI-Cat" do
       #@gi_cat.is_running?.should be_true
     #end
 
-   it "Sends requests with basic header information" do
-      @gi_cat.standard_headers[:content_type].should eq "application/xml"
-    end
-
-    it "Can authorize access using the Authorization header" do
-      @gi_cat.standard_headers[:Authorization].should eq "Basic YWRtaW46YWJjZDEyMyQ="
-    end
-  end
+#   it "Sends requests with basic header information" do
+#      @gi_cat.standard_headers[:content_type].should eq "application/xml"
+#    end
+#
+#    it "Can authorize access using the Authorization header" do
+#      @gi_cat.standard_headers[:Authorization].should eq "Basic YWRtaW46YWJjZDEyMyQ="
+#    end
+#  end
 
   #describe "Profile management" do
     #it "Retrieves a profile id given the name" do

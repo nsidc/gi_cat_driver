@@ -9,19 +9,18 @@ require 'timeout'
 # The GI-Cat Driver
 module GiCatDriver
   class GiCat
-
+  
     ATOM_NAMESPACE = { "atom" => "http://www.w3.org/2005/Atom" }
     RELEVANCE_NAMESPACE = { "relevance" => "http://a9.com/-/opensearch/extensions/relevance/1.0/" }
-    STANDARD_HEADERS = {
-            :content_type => "application/xml",
-            :Authorization => basic_auth_string
-          }
+
     attr_accessor :base_url
 
     def initialize( url, username, password )
       @base_url = url.sub(/\/+$/, '')
       @admin_username = username
       @admin_password = password
+      
+      self.class.const_set("STANDARD_HEADERS",{ :content_type => "application/xml", :Authorization => self.basic_auth_string })
     end
 
     # Check whether the URL is accessible
