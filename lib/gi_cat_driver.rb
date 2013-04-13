@@ -165,9 +165,9 @@ module GiCatDriver
       timestamp = Time.now
       puts "#{Time.now}: Harvest #{harvestername} status: #{status}"
       case status
-      when /completed/
+      when /Harvesting completed/
         return :completed
-      when /error/
+      when /Harvesting error/
         return :error
       else
         return :pending
@@ -186,9 +186,9 @@ module GiCatDriver
           if node.name == "status" && !node.inner_xml.empty?
             case harvest_status(node.inner_xml, harvestername)
             when :error
-              fail "Error harvesting the resource #{harvestername}: #{harvest_status}"
+              fail "Error harvesting the resource #{harvestername}"
             when :completed
-              puts "Harvest succeed harvesting #{harvestername}"
+              puts "Succesfully harvested #{harvestername}"
               return
             else
               #place holder for other cases
