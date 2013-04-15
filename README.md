@@ -44,6 +44,12 @@ Rubydoc API documentation is available at http://rubydoc.info/gems/gi_cat_driver
 
 ## Version History
 
+* 0.1.6
+  * Extended timeout default to handle a large amount of data in harvest
+* 0.1.5
+  * Improved output of harvesting to provide better information about what is happening
+* 0.1.3
+  * Added timeout for harvest procedure
 * 0.1.2
   * Additional harvesting output
   * Harvester resources now handled dynamically
