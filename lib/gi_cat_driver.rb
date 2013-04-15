@@ -98,7 +98,7 @@ module GiCatDriver
       harvestersinfo_array.each do |harvester_id, harvester_title|
         harvest_resource_for_active_configuration(harvester_id.to_s, harvester_title)
       end
-      confirm_harvest_done(harvestersinfo_array, 300)
+      confirm_harvest_done(harvestersinfo_array, 1600)
     end
 
     #### Private Methods
@@ -200,7 +200,7 @@ module GiCatDriver
 
     # Run till harvest all the resources are completed or time out
     # The default timeout is 300 seconds (5 minutes)
-    def confirm_harvest_done(harvestersinfo_array, waitmax=300)
+    def confirm_harvest_done(harvestersinfo_array, waitmax=1600)
       begin
         puts "Info: Max wait time (timeout) for current profile is set to #{waitmax} seconds"
         Timeout::timeout(waitmax) do
