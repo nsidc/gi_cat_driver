@@ -6,7 +6,9 @@ RSpec::Core::RakeTask.new('spec')
 task :default => :spec # to make it default
 
 desc "Generate Rocco Documentation"
-Rocco::make 'doc/', 'lib/**/*.rb', {
-  :language => 'ruby',
-  :stylesheet => 'docco.css'
-}
+task :rocco do |t|
+  Rocco::make 'doc/', 'lib/**/*.rb', {
+    :language => 'ruby',
+    :stylesheet => 'docco.css'
+  }
+end
