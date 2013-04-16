@@ -220,15 +220,16 @@ Returns true if Lucene is turned on</p>
         <div class="pilwrap">
           <a class="pilcrow" href="#section-13">&#182;</a>
         </div>
-        <p>Harvest all resource in the active profile</p>
+        <p>Harvest all resource in the active profile
+The default timeout is 1500 seconds (25 minutes)</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">harvest_all_resources_for_active_configuration</span>
+        <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">harvest_all_resources_for_active_configuration</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1500</span>
       <span class="n">harvestersinfo_array</span> <span class="o">=</span> <span class="n">get_harvest_resources</span><span class="p">(</span><span class="n">get_active_profile_id</span><span class="p">)</span>
       <span class="n">harvestersinfo_array</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">harvester_id</span><span class="p">,</span> <span class="n">harvester_title</span><span class="o">|</span>
         <span class="n">harvest_resource_for_active_configuration</span><span class="p">(</span><span class="n">harvester_id</span><span class="o">.</span><span class="n">to_s</span><span class="p">,</span> <span class="n">harvester_title</span><span class="p">)</span>
       <span class="k">end</span>
-      <span class="n">confirm_harvest_done</span><span class="p">(</span><span class="n">harvestersinfo_array</span><span class="p">,</span> <span class="mi">1600</span><span class="p">)</span>
+      <span class="n">confirm_harvest_done</span><span class="p">(</span><span class="n">harvestersinfo_array</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
@@ -368,7 +369,7 @@ Returns true if Lucene is turned on</p>
         <p>Run till the harvest of a resource is completed</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">havest_request_is_done</span><span class="p">(</span><span class="n">harvesterid</span><span class="p">,</span> <span class="n">harvestername</span><span class="o">=</span><span class="s2">&quot;n/a&quot;</span><span class="p">)</span>
+        <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">harvest_request_is_done</span><span class="p">(</span><span class="n">harvesterid</span><span class="p">,</span> <span class="n">harvestername</span><span class="o">=</span><span class="s2">&quot;n/a&quot;</span><span class="p">)</span>
       <span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">do</span>
         <span class="n">rnum</span><span class="o">=</span><span class="nb">rand</span>
         <span class="n">request</span> <span class="o">=</span> <span class="vi">@base_url</span> <span class="o">+</span> <span class="s2">&quot;/services/conf/giconf/status?id=</span><span class="si">#{</span><span class="n">harvesterid</span><span class="si">}</span><span class="s2">&amp;rand=</span><span class="si">#{</span><span class="n">rnum</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -406,17 +407,16 @@ Returns true if Lucene is turned on</p>
         <div class="pilwrap">
           <a class="pilcrow" href="#section-23">&#182;</a>
         </div>
-        <p>Run till harvest all the resources are completed or time out
-The default timeout is 300 seconds (5 minutes)</p>
+        <p>Run till harvest all the resources are completed or time out</p>
 
       </td>
       <td class=code>
-        <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">confirm_harvest_done</span><span class="p">(</span><span class="n">harvestersinfo_array</span><span class="p">,</span> <span class="n">waitmax</span><span class="o">=</span><span class="mi">1600</span><span class="p">)</span>
+        <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">confirm_harvest_done</span><span class="p">(</span><span class="n">harvestersinfo_array</span><span class="p">,</span> <span class="n">waitmax</span><span class="p">)</span>
       <span class="k">begin</span>
         <span class="nb">puts</span> <span class="s2">&quot;Info: Max wait time (timeout) for current profile is set to </span><span class="si">#{</span><span class="n">waitmax</span><span class="si">}</span><span class="s2"> seconds&quot;</span>
-        <span class="ss">Timeout</span><span class="p">:</span><span class="ss">:timeout</span><span class="p">(</span><span class="n">waitmax</span><span class="p">)</span> <span class="k">do</span>
+        <span class="ss">Timeout</span><span class="p">:</span><span class="ss">:timeout</span><span class="p">(</span><span class="n">waitmax</span><span class="o">.</span><span class="n">to_i</span><span class="p">)</span> <span class="k">do</span>
           <span class="n">harvestersinfo_array</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">harvester_id</span><span class="p">,</span> <span class="n">harvester_title</span><span class="o">|</span>
-            <span class="n">havest_request_is_done</span><span class="p">(</span><span class="n">harvester_id</span><span class="o">.</span><span class="n">to_s</span><span class="p">,</span> <span class="n">harvester_title</span><span class="p">)</span>
+            <span class="n">harvest_request_is_done</span><span class="p">(</span><span class="n">harvester_id</span><span class="o">.</span><span class="n">to_s</span><span class="p">,</span> <span class="n">harvester_title</span><span class="p">)</span>
           <span class="k">end</span>
         <span class="k">end</span>
       <span class="k">rescue</span> <span class="ss">Timeout</span><span class="p">:</span><span class="ss">:Error</span>
