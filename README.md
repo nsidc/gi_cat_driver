@@ -43,7 +43,10 @@ Annotated source code documentation is available at http://nsidc.github.com/gi_c
 Rubydoc API documentation is available at http://rubydoc.info/gems/gi_cat_driver/
 
 ## Version History
-
+* 0.1.8
+  * Changed harvest api so the timeout is configurable
+* 0.1.7
+  * Minor change: updated a private function name
 * 0.1.6
   * Extended timeout default to handle a large amount of data in harvest
 * 0.1.5
