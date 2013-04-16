@@ -175,7 +175,7 @@ module GiCatDriver
     end
 
     # Run till the harvest of a resource is completed
-    def havest_request_is_done(harvesterid, harvestername="n/a")
+    def harvest_request_is_done(harvesterid, harvestername="n/a")
       while(1) do
         rnum=rand
         request = @base_url + "/services/conf/giconf/status?id=#{harvesterid}&rand=#{rnum}"
@@ -205,7 +205,7 @@ module GiCatDriver
         puts "Info: Max wait time (timeout) for current profile is set to #{waitmax} seconds"
         Timeout::timeout(waitmax) do
           harvestersinfo_array.each do |harvester_id, harvester_title|
-            havest_request_is_done(harvester_id.to_s, harvester_title)
+            harvest_request_is_done(harvester_id.to_s, harvester_title)
           end
         end
       rescue Timeout::Error
