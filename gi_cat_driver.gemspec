@@ -24,5 +24,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "rake", "~> 10.0.3"
   spec.add_development_dependency "rspec", "~> 2.13.0"
-  spec.add_development_dependency "fl-rocco", "~> 1.0.0"
+  spec.add_development_dependency "pygments.rb", "~> 0.4.2"
+  spec.add_development_dependency "mustache", "~> 0.99.4"
+  spec.add_development_dependency "redcarpet", "~> 2.2.2"
+  spec.add_development_dependency "rocco", "~> 0.8.2"
 end
