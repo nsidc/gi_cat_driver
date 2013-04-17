@@ -178,6 +178,8 @@ module GiCatDriver
     # Run till the harvest of a resource is completed
     def harvest_request_is_done(harvesterid, harvestername="n/a")
       while(1) do
+        sleep 10    # Wait for ten seconds
+
         rnum=rand
         request = @base_url + "/services/conf/giconf/status?id=#{harvesterid}&rand=#{rnum}"
         response = RestClient.get request
@@ -185,14 +187,12 @@ module GiCatDriver
         responsexml = Nokogiri::XML::Reader(response)
         responsexml.each do |node|
           if node.name == "status" && !node.inner_xml.empty?
-            case harvest_status(node.inner_xml, harvestername)
-            when :error
+            status = harvest_status(node.inner_xml, harvestername)
+            if status.eq :error
               fail "Error harvesting the resource #{harvestername}"
-            when :completed
+            elsif status.eq :completed
               puts "Succesfully harvested #{harvestername}"
               return
-            else
-              #place holder for other cases
             end
           end
         end
