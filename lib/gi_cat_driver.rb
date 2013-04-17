@@ -188,9 +188,9 @@ module GiCatDriver
         responsexml.each do |node|
           if node.name == "status" && !node.inner_xml.empty?
             status = harvest_status(node.inner_xml, harvestername)
-            if status.eq :error
+            if status.eql? :error
               fail "Error harvesting the resource #{harvestername}"
-            elsif status.eq :completed
+            elsif status.eql? :completed
               puts "Succesfully harvested #{harvestername}"
               return
             end
