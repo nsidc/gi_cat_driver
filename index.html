@@ -371,6 +371,8 @@ The default timeout is 1500 seconds (25 minutes)</p>
       <td class=code>
         <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">harvest_request_is_done</span><span class="p">(</span><span class="n">harvesterid</span><span class="p">,</span> <span class="n">harvestername</span><span class="o">=</span><span class="s2">&quot;n/a&quot;</span><span class="p">)</span>
       <span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">do</span>
+        <span class="nb">sleep</span> <span class="mi">10</span>    <span class="c1"># Wait for ten seconds</span>
+
         <span class="n">rnum</span><span class="o">=</span><span class="nb">rand</span>
         <span class="n">request</span> <span class="o">=</span> <span class="vi">@base_url</span> <span class="o">+</span> <span class="s2">&quot;/services/conf/giconf/status?id=</span><span class="si">#{</span><span class="n">harvesterid</span><span class="si">}</span><span class="s2">&amp;rand=</span><span class="si">#{</span><span class="n">rnum</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="no">RestClient</span><span class="o">.</span><span class="n">get</span> <span class="n">request</span>
@@ -378,34 +380,23 @@ The default timeout is 1500 seconds (25 minutes)</p>
         <span class="n">responsexml</span> <span class="o">=</span> <span class="no">Nokogiri</span><span class="o">::</span><span class="no">XML</span><span class="o">::</span><span class="no">Reader</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
         <span class="n">responsexml</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">node</span><span class="o">|</span>
           <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;status&quot;</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">node</span><span class="o">.</span><span class="n">inner_xml</span><span class="o">.</span><span class="n">empty?</span>
-            <span class="k">case</span> <span class="n">harvest_status</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">inner_xml</span><span class="p">,</span> <span class="n">harvestername</span><span class="p">)</span>
-            <span class="k">when</span> <span class="ss">:error</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="n">harvest_status</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">inner_xml</span><span class="p">,</span> <span class="n">harvestername</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">status</span><span class="o">.</span><span class="n">eq</span> <span class="ss">:error</span>
               <span class="nb">fail</span> <span class="s2">&quot;Error harvesting the resource </span><span class="si">#{</span><span class="n">harvestername</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="k">when</span> <span class="ss">:completed</span>
+            <span class="k">elsif</span> <span class="n">status</span><span class="o">.</span><span class="n">eq</span> <span class="ss">:completed</span>
               <span class="nb">puts</span> <span class="s2">&quot;Succesfully harvested </span><span class="si">#{</span><span class="n">harvestername</span><span class="si">}</span><span class="s2">&quot;</span>
               <span class="k">return</span>
-            <span class="k">else</span></pre></div>
-      </td>
-    </tr>
-    <tr id='section-22'>
-      <td class=docs>
-        <div class="pilwrap">
-          <a class="pilcrow" href="#section-22">&#182;</a>
-        </div>
-        <p>place holder for other cases</p>
-      </td>
-      <td class=code>
-        <div class='highlight'><pre>            <span class="k">end</span>
+            <span class="k">end</span>
           <span class="k">end</span>
         <span class="k">end</span>
       <span class="k">end</span>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-23'>
+    <tr id='section-22'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-23">&#182;</a>
+          <a class="pilcrow" href="#section-22">&#182;</a>
         </div>
         <p>Run till harvest all the resources are completed or time out</p>
 
