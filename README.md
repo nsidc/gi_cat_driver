@@ -43,6 +43,8 @@ Annotated source code documentation is available at http://nsidc.github.com/gi_c
 Rubydoc API documentation is available at http://rubydoc.info/gems/gi_cat_driver/
 
 ## Version History
+* 0.2.1
+  * Fixed harvester requests to use Faraday
 * 0.2.0
   * Introduced Faraday gem to replace rest-client and webmock for testing requests
   * Implemented tests for methods that use fixtures to mock response data
