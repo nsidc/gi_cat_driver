@@ -126,8 +126,8 @@ module GiCatDriver
     # Retrive the distributor id given a profile id
     def get_active_profile_distributor_id(id)
       active_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{id}"
-      response = RestClient.get(active_profile_request, STANDARD_HEADERS)
-      id = Nokogiri::XML(response).css("component id").text
+      response = Faraday.get(active_profile_request, STANDARD_HEADERS)
+      id = Nokogiri::XML(response.body).css("component id").text
       return id
     end
 
@@ -135,8 +135,8 @@ module GiCatDriver
     def get_harvest_resources(profile_id)
       id = get_active_profile_distributor_id(profile_id)
       harvest_resource_request = "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}/distributors/#{id}"
-      response = RestClient.get(harvest_resource_request, STANDARD_HEADERS)
-      doc = Nokogiri::XML(response)
+      response = Faraday.get(harvest_resource_request, STANDARD_HEADERS)
+      doc = Nokogiri::XML(response.body)
       harvestersinfo_array = {}
       doc.css("component").each do |component|
         harvestersinfo_array[component.css("id").text.to_sym] = component.css("title").text
@@ -148,7 +148,7 @@ module GiCatDriver
     def harvest_resource_for_active_configuration(harvesterid, harvestername = "n/a")
       Faraday.get(
         "#{@base_url}/services/conf/brokerConfigurations/#{self.get_active_profile_id}/harvesters/#{harvesterid}/start",
-        STANDARD_HEADERS) do |response, request, result, &block|
+        AUTHORIZATION_HEADERS) do |response, request, result, &block|
           case response.code
           when 200
             puts "#{Time.now}: Initiate harvesting GI-Cat resource #{harvestername}. Please wait a couple minutes for the process to complete."
@@ -181,7 +181,7 @@ module GiCatDriver
         rnum=rand
         request = @base_url + "/services/conf/giconf/status?id=#{harvesterid}&rand=#{rnum}"
 
-        response = Faraday.get request
+        response = Faraday.get request, STANDARD_HEADERS
         responsexml = Nokogiri::XML::Reader(response.body)
         responsexml.each do |node|
           if node.name == "status" && !node.inner_xml.empty?
