@@ -31,7 +31,7 @@ describe GiCatDriver do
           'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
           'Content-Type'=>'application/xml',
           'User-Agent'=>'Ruby'
-        }).to_return(:status => 200, :body => File.new("spec/fixtures/brokerConfigurations.xml"), :headers => {})
+        }).to_return(:status => 200, :body => "1", :headers => {})
 
       profile_id = @gi_cat.get_active_profile_id
 
@@ -75,13 +75,13 @@ describe GiCatDriver do
     end
 
     it "can enable a profile given the name" do
-      enable_conf_url = "http://www.somecompany.com/services/conf/brokerConfigurations/1"
+      enable_conf_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations/1"
       stub_request(:get,enable_conf_url)
         .with(:headers => {
-          'Accept'=>'*/*', 
+          'Accept'=>'application/xml', 
           'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
           'User-Agent'=>'Ruby', 
-          'Content-Type'=>'application/xml'
+          'Content-Type'=>'*/*'
         }, :query => {:opts => "active"})
         .to_return(:status => 200, :body => File.new("spec/fixtures/brokerConfigurations.xml"), :headers => {})
 
@@ -102,7 +102,7 @@ describe GiCatDriver do
           'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
           'User-Agent'=>'Ruby', 
           'Content-Type'=>'application/xml'
-        }).to_return(:status => 200, :body => File.new("spec/fixtures/brokerConfigurations.xml"), :headers => {})
+        }).to_return(:status => 200, :body => "1", :headers => {})
 
       @gi_cat.enable_profile "some_profile"
 
@@ -111,13 +111,13 @@ describe GiCatDriver do
     end
 
     it "enables Lucene for the active profile" do
-      enable_lucene_url = "http://www.somecompany.com/services/conf/brokerConfigurations/1/luceneEnabled"
+      enable_lucene_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations/1/luceneEnabled"
       stub_request(:put,enable_lucene_url)
         .with(:headers => {
-          'Accept'=>'*/*', 
-          'User-Agent'=>'Faraday v0.8.7', 
-          'Content-Type'=>'application/xml'
-        }, :body => "true").to_return(:status => 200, :body => File.new("spec/fixtures/brokerConfigurations.xml"), :headers => {})
+          'Accept'=>'application/xml', 
+          'User-Agent'=>'Ruby', 
+          'Content-Type'=>'*/*'
+        }, :body => "true").to_return(:status => 200, :body => "", :headers => {})
 
       conf_request_url = "http://www.somecompany.com/services/conf/giconf/configuration"
       stub_request(:get,conf_request_url)
@@ -126,19 +126,19 @@ describe GiCatDriver do
           'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
           'User-Agent'=>'Ruby', 
           'Content-Type'=>'application/xml'
-        }).to_return(:status => 200, :body => File.new("spec/fixtures/brokerConfigurations.xml"), :headers => {})
+        }).to_return(:status => 200, :body => "1", :headers => {})
 
-      enable_conf_url = "http://www.somecompany.com/services/conf/brokerConfigurations/1"
+      enable_conf_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations/1"
       stub_request(:get,enable_conf_url)
         .with(:headers => {
-          'Accept'=>'*/*', 
+          'Accept'=>'application/xml', 
           'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
           'User-Agent'=>'Faraday v0.8.7', 
-          'Content-Type'=>'application/xml'
+          'Content-Type'=>'*/*'
         }, :query => {:opts => "active"})
         .to_return(:status => 200, :body => File.new("spec/fixtures/brokerConfigurations.xml"), :headers => {})
 
-      enable_conf_url = "http://www.somecompany.com/services/opensearchesip?bbox=&ct=&gdc=&lac=&loc=&luc=&outputFormat=&rel=&si=&st=arctic alaskan shrubs&te=&ts="
+      enable_conf_url = "http://www.somecompany.com/services/opensearchesip?bbox=&ct=&gdc=&lac=&loc=&luc=&outputFormat=&rel=&si=&st=arctic%20alaskan%20shrubs&te=&ts="
       stub_request(:get,enable_conf_url)
         .with(:headers => {
           'Accept'=>'*/*',

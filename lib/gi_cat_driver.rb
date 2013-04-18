@@ -59,7 +59,7 @@ module GiCatDriver
         req.headers = STANDARD_HEADERS
       end
 
-      profile_id = parse_profile_id(response.body)
+      profile_id = response.body
       return profile_id
     end
 
@@ -67,7 +67,7 @@ module GiCatDriver
     def enable_profile( profile_name )
       Faraday.get do |req|
         req.url "#{@base_url}/services/conf/brokerConfigurations/#{find_profile_id(profile_name)}?opts=active"
-        req.headers = STANDARD_HEADERS
+        req.headers = AUTHORIZATION_HEADERS
       end
     end
 
@@ -111,13 +111,16 @@ module GiCatDriver
 
     def set_lucene_enabled( enabled )
       enable_lucene_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}/luceneEnabled"
-      Faraday.put(enable_lucene_request,
-        enabled.to_s,
-        STANDARD_HEADERS)
+      Faraday.put do |req|
+        req.url enable_lucene_request
+        req.body = enabled.to_s
+        req.headers = AUTHORIZATION_HEADERS
+        req.options[:timeout] = 300
+      end
 
       activate_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}"
       Faraday.get(activate_profile_request, { :opts => "active" },
-        STANDARD_HEADERS)
+        AUTHORIZATION_HEADERS)
     end
 
     # Retrive the distributor id given a profile id
@@ -214,15 +217,6 @@ module GiCatDriver
       raise "The profile '" + profile_name + "' does not exist!" if profile.empty?
 
       return profile.attr('id').value
-    end
-
-    def parse_profile_id( xml_doc )
-      configs = Nokogiri.XML(xml_doc)
-      profile = configs.css("brokerConfiguration")
-      profile_id = profile.attr('id').value
-      raise "The profile '" + profile_name + "' does not exist!" if profile_id.empty?
-
-      return profile_id
     end
 
   end
