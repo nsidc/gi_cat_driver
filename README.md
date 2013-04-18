@@ -43,6 +43,17 @@ Annotated source code documentation is available at http://nsidc.github.com/gi_c
 Rubydoc API documentation is available at http://rubydoc.info/gems/gi_cat_driver/
 
 ## Version History
+* 0.2.0
+  * Introduced Faraday gem to replace rest-client and webmock for testing requests
+  * Implemented tests for methods that use fixtures to mock response data
+* 0.1.12
+  * Fixed typo in check for harvest status
+* 0.1.11
+  * Added sleep to harvest method to limit console output
+* 0.1.10
+  * Fixed rocco rake task
+* 0.1.9
+  * Added rake task to generate rocco docs
 * 0.1.8
   * Changed harvest api so the timeout is configurable
 * 0.1.7
