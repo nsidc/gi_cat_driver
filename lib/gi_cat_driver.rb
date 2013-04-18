@@ -26,7 +26,7 @@ module GiCatDriver
 
       # Set up a constant containing the standard request headers
       self.class.const_set("STANDARD_HEADERS", { :content_type => "application/xml" })
-      self.class.const_set("AUTHORIZATION_HEADERS", { :content_type => "*/*", :Accept => "application/xml" :Authorization => self.basic_auth_string })
+      self.class.const_set("AUTHORIZATION_HEADERS", { :content_type => "*/*", :Accept => "application/xml", :Authorization => self.basic_auth_string })
     end
 
     # Basic Authorization used in the request headers
@@ -56,7 +56,7 @@ module GiCatDriver
     def get_active_profile_id
       response = Faraday.get do |req|
         req.url "#{@base_url}/services/conf/giconf/configuration"
-        req.headers = standard_headers
+        req.headers = STANDARD_HEADERS
       end
 
       profile_id = parse_profile_id(response.body)
@@ -86,7 +86,7 @@ module GiCatDriver
     # Instead, run a query and check that a 'relevance:score' element is present.
     # Returns true if Lucene is turned on
     def is_lucene_enabled?
-      query_string = EsipOpensearchQueryBuilder::get_query_string({ :st => "snow" })
+      query_string = EsipOpensearchQueryBuilder::get_query_string({ :st => "arctic%20alaskan%20shrubs" })
       results = Nokogiri::XML(open("#{@base_url}/services/opensearchesip#{query_string}"))
 
       result_scores = results.xpath('//atom:feed/atom:entry/relevance:score', ATOM_NAMESPACE.merge(RELEVANCE_NAMESPACE))
@@ -115,8 +115,8 @@ module GiCatDriver
         enabled.to_s,
         STANDARD_HEADERS)
 
-      activate_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}?opts=active"
-      Faraday.get(activate_profile_request,
+      activate_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}"
+      Faraday.get(activate_profile_request, { :opts => "active" },
         STANDARD_HEADERS)
     end
 

@@ -3,7 +3,7 @@ require 'gi_cat_driver'
 require 'webmock/rspec'
 
 describe GiCatDriver do
-  before(:each) do
+  before(:all) do
     @base_url = "http://www.somecompany.com/"
     @gi_cat = GiCatDriver::GiCat.new(@base_url, "admin", "pass")
   end
@@ -60,10 +60,18 @@ describe GiCatDriver do
     end
 
     it "throws an error if the profile cannot be found" do
-      xml = File.new("spec/fixtures/brokerConfigurations.xml")
+      request_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations"
+      stub_request(:get,request_url)
+        .with(:headers => {
+          'Accept'=>'application/xml', 
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
+          'User-Agent'=>'Ruby', 
+          'Content-Type'=>'*/*'
+        }, :query => {:nameRepository => "gicat"})
+        .to_return(:status => 200, :body => File.new("spec/fixtures/brokerConfigurations.xml"), :headers => {})
 
       # Lambda hack to catch error http://stackoverflow.com/questions/2359439/expecting-errors-in-rspec-tests
-      lambda {@gi_cat.parse_profile_element "bad_name", xml}.should raise_error(RuntimeError)
+      lambda {@gi_cat.find_profile_id "bad_name"}.should raise_error(RuntimeError)
     end
 
     it "can enable a profile given the name" do
@@ -107,7 +115,7 @@ describe GiCatDriver do
       stub_request(:put,enable_lucene_url)
         .with(:headers => {
           'Accept'=>'*/*', 
-          'User-Agent'=>'Ruby', 
+          'User-Agent'=>'Faraday v0.8.7', 
           'Content-Type'=>'application/xml'
         }, :body => "true").to_return(:status => 200, :body => File.new("spec/fixtures/brokerConfigurations.xml"), :headers => {})
 
@@ -125,17 +133,17 @@ describe GiCatDriver do
         .with(:headers => {
           'Accept'=>'*/*', 
           'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
-          'User-Agent'=>'Ruby', 
+          'User-Agent'=>'Faraday v0.8.7', 
           'Content-Type'=>'application/xml'
         }, :query => {:opts => "active"})
         .to_return(:status => 200, :body => File.new("spec/fixtures/brokerConfigurations.xml"), :headers => {})
 
-      enable_conf_url = "http://www.somecompany.com/services/opensearchesip?bbox=&ct=&lac=&loc=&luc=&outputFormat=&rel=&si=&st=snow&te=&ts="
+      enable_conf_url = "http://www.somecompany.com/services/opensearchesip?bbox=&ct=&gdc=&lac=&loc=&luc=&outputFormat=&rel=&si=&st=arctic alaskan shrubs&te=&ts="
       stub_request(:get,enable_conf_url)
         .with(:headers => {
-          'Accept'=>'*/*', 
-          'User-Agent'=>'Ruby', 
-        }).to_return(:status => 200, :body => File.new("spec/fixtures/opensearch_response.xml"), :headers => {})
+          'Accept'=>'*/*',
+          'User-Agent'=>'Ruby'
+        }).to_return(:status => 200, :body => File.new("spec/fixtures/opensearchesip_lucene_enabled.xml"), :headers => {})
 
       @gi_cat.enable_lucene
 

@@ -1,0 +1,174 @@
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="&#xa;                http://www.w3.org/2005/Atom http://zeus.pin.unifi.it/schemas/geo-rss/atom_1.0_specification.xsd http://www.georss.org/georss http://zeus.pin.unifi.it/schemas/geo-rss/geo_rss_1.1_specification.xsd http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/base/gml.xsd&#xa;            ">
+   <title>Search results</title>
+   <id>urn:gi-cat:id:2%3F4075b4-c953-4375-ba4c-459fd35c43d2</id>
+   <updated>2013-04-18T10:44:41.928-06:00</updated>
+   <link href="http://nsidc.org:-1/api/gi-cat/services/opensearchesip?getdescriptiondocument" rel="search" title="Content Search" type="application/opensearchdescription+xml"/>
+   <link href="http://nsidc.org:-1/api/gi-cat/services/opensearchesip?si=&amp;ct=&amp;st=arctic%20alaskan%20shrubs&amp;bbox=&amp;rel=&amp;loc=&amp;ts=&amp;te=&amp;outputFormat=application/atom+xml" rel="self" type="application/rss+xml"/>
+   <totalResults xmlns="http://a9.com/-/spec/opensearch/1.1/">1</totalResults>
+   <startIndex xmlns="http://a9.com/-/spec/opensearch/1.1/">1</startIndex>
+   <itemsPerPage xmlns="http://a9.com/-/spec/opensearch/1.1/">10</itemsPerPage>
+   <entry>
+      <title>A Half-Century of Change in Arctic Alaskan Shrubs: A Photographic-Based Assessment</title>
+<atom:link xmlns:atom="http://www.w3.org/2005/Atom" href="http://data.eol.ucar.edu/jedi/catalog/ucar.ncar.eol.dataset.106_ARCSS130.thredds.xml" rel="enclosure" type=""/>
+<dm:genericLink xmlns:dm="http://floraresearch.eu/sdi/services/7.0/dataModel/schema">http://data.eol.ucar.edu/jedi/catalog/ucar.ncar.eol.dataset.106_ARCSS130.thredds.xml</dm:genericLink>
+      <id>urn:gi-cat:id:aHR0cDovL2RhdGEuZW9sLnVjYXIuZWR1L2plZGkvY2F0YWxvZy91Y2FyLm5jYXIuZW9sLmRhdGFzZXQuMTA2X0FSQ1NTMTMwLnRocmVkZHMueG1sIy8vdGhyOmRhdGFzZXRbQElEPSd1Y2FyLm5jYXIuZW9sLmRhdGFzZXQuMTA2X0FSQ1NTMTMwJ10=</id>
+      <updated/>
+      <link href="http://data.eol.ucar.edu/jedi/catalog/ucar.ncar.eol.dataset.106_ARCSS130.thredds.xml"/>
+      <link href="http://data.eol.ucar.edu/jedi/catalog/ucar.ncar.eol.dataset.106_ARCSS130.thredds.xml" rel="related"/>
+      <category label="dataset" term="hlevel"/>
+      <category label="dataSetDataBase" term="topic"/>
+      <category label="dataSetDataBase" term="geosscategory"/>
+      <author>
+         <name>unknown</name>
+      </author>
+      <box xmlns="http://www.georss.org/georss">-90.0 -180.0 90.0 180.0</box>
+      <multibox xmlns="http://iia.cnr.it">-90.0 -180.0 90.0 180.0#</multibox>
+      <parentID xmlns="http://eu.floraresearch">aHR0cDovL2RhdGEuZW9sLnVjYXIuZWR1L2plZGkvY2F0YWxvZy91Y2FyLm5jYXIuZW9sLnByb2plY3QuQVJDU1MudGhyZWRkcy54bWwjLy90aHI6ZGF0YXNldFtASUQ9J3VjYXIubmNhci5lb2wucHJvamVjdC5BUkNTUydd</parentID>
+      <harvested xmlns="http://eu.floraresearch">false</harvested>
+      <gmd:distributionInfo xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dct="http://purl.org/dc/terms/" xmlns:dm="http://floraresearch.eu/sdi/services/7.0/dataModel/schema" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gmi="http://www.isotc211.org/2005/gmi" xmlns:gml="http://www.opengis.net/gml" xmlns:gmx="http://www.opengis.net/gmx" xmlns:ns15="http://quakeml.org/xmlns/quakeml/1.2" xmlns:ns3="http://www.geoviqua.org/QualityInformationModel/3.1" xmlns:ns4="http://quakeml.org/xmlns/bed/1.2" xmlns:ogc="http://www.opengis.net/ogc" xmlns:ows="http://www.opengis.net/ows" xmlns:relevance="http://a9.com/-/opensearch/extensions/relevance/1.0/" xmlns:rim="urn:oasis:names:tc:ebxml-regrep:xsd:rim:3.0" xmlns:srv="http://www.isotc211.org/2005/srv" xmlns:wrs="http://www.opengis.net/cat/wrs/1.0" xmlns:xlink="http://www.w3.org/1999/xlink">
+         
+         <gmd:MD_Distribution>
+            
+            <gmd:transferOptions>
+               
+               <gmd:MD_DigitalTransferOptions>
+                  
+                  <gmd:onLine>
+                     
+                     <gmd:CI_OnlineResource>
+                        
+                        <gmd:linkage>
+                           
+                           <gmd:URL>http://data.eol.ucar.edu/jedi/catalog/ucar.ncar.eol.dataset.106_ARCSS130.thredds.xml</gmd:URL>
+                           
+                        </gmd:linkage>
+                        
+                        <gmd:protocol>
+                           
+                           <gco:CharacterString>HTTP</gco:CharacterString>
+                           
+                        </gmd:protocol>
+                        
+                     </gmd:CI_OnlineResource>
+                     
+                  </gmd:onLine>
+                  
+               </gmd:MD_DigitalTransferOptions>
+               
+            </gmd:transferOptions>
+            
+         </gmd:MD_Distribution>
+         
+      </gmd:distributionInfo>
+      <gmd:identificationInfo xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dct="http://purl.org/dc/terms/" xmlns:dm="http://floraresearch.eu/sdi/services/7.0/dataModel/schema" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gmi="http://www.isotc211.org/2005/gmi" xmlns:gml="http://www.opengis.net/gml" xmlns:gmx="http://www.opengis.net/gmx" xmlns:ns15="http://quakeml.org/xmlns/quakeml/1.2" xmlns:ns3="http://www.geoviqua.org/QualityInformationModel/3.1" xmlns:ns4="http://quakeml.org/xmlns/bed/1.2" xmlns:ogc="http://www.opengis.net/ogc" xmlns:ows="http://www.opengis.net/ows" xmlns:relevance="http://a9.com/-/opensearch/extensions/relevance/1.0/" xmlns:rim="urn:oasis:names:tc:ebxml-regrep:xsd:rim:3.0" xmlns:srv="http://www.isotc211.org/2005/srv" xmlns:wrs="http://www.opengis.net/cat/wrs/1.0" xmlns:xlink="http://www.w3.org/1999/xlink">
+         
+         <gmd:MD_DataIdentification xsi:schemaLocation="http://www.isotc211.org/2005/gmd http://zeus.pin.unifi.it/schemas/mirrors/schemas.opengis.net/csw/2.0.2/profiles/apiso/1.0.0/apiso.xsd">
+            
+            <gmd:topicCategory>
+               
+               <gmd:MD_TopicCategoryCode>dataSetDataBase</gmd:MD_TopicCategoryCode>
+               
+            </gmd:topicCategory>
+            
+            <gmd:citation>
+               
+               <gmd:CI_Citation>
+                  
+                  <gmd:title>
+                     
+                     <gco:CharacterString>A Half-Century of Change in Arctic Alaskan Shrubs: A Photographic-Based Assessment</gco:CharacterString>
+                     
+                  </gmd:title>
+                  
+                  <gmd:editionDate>
+                     
+                     <gco:Date/>
+                     
+                  </gmd:editionDate>
+                  
+                  <gmd:date>
+                     
+                     <gmd:CI_Date>
+                        
+                        <gmd:date>
+                           
+                           <gco:Date/>
+                           
+                        </gmd:date>
+                        
+                     </gmd:CI_Date>
+                     
+                  </gmd:date>
+                  
+               </gmd:CI_Citation>
+               
+            </gmd:citation>
+            
+            <gmd:abstract/>
+            
+            <gmd:language/>
+            
+            <gmd:extent>
+               
+               <gmd:EX_Extent>
+                  
+                  <gmd:geographicElement>
+                     
+                     <gmd:EX_GeographicBoundingBox>
+                        
+                        <gmd:westBoundLongitude>
+                           
+                           <gco:Decimal>-180.0</gco:Decimal>
+                           
+                        </gmd:westBoundLongitude>
+                        
+                        <gmd:eastBoundLongitude>
+                           
+                           <gco:Decimal>180.0</gco:Decimal>
+                           
+                        </gmd:eastBoundLongitude>
+                        
+                        <gmd:southBoundLatitude>
+                           
+                           <gco:Decimal>-90.0</gco:Decimal>
+                           
+                        </gmd:southBoundLatitude>
+                        
+                        <gmd:northBoundLatitude>
+                           
+                           <gco:Decimal>90.0</gco:Decimal>
+                           
+                        </gmd:northBoundLatitude>
+                        
+                     </gmd:EX_GeographicBoundingBox>
+                     
+                  </gmd:geographicElement>
+                  
+               </gmd:EX_Extent>
+               
+            </gmd:extent>
+            
+         </gmd:MD_DataIdentification>
+         
+      </gmd:identificationInfo>
+      <gmd:identificationInfo xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dct="http://purl.org/dc/terms/" xmlns:dm="http://floraresearch.eu/sdi/services/7.0/dataModel/schema" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gmi="http://www.isotc211.org/2005/gmi" xmlns:gml="http://www.opengis.net/gml" xmlns:gmx="http://www.opengis.net/gmx" xmlns:ns15="http://quakeml.org/xmlns/quakeml/1.2" xmlns:ns3="http://www.geoviqua.org/QualityInformationModel/3.1" xmlns:ns4="http://quakeml.org/xmlns/bed/1.2" xmlns:ogc="http://www.opengis.net/ogc" xmlns:ows="http://www.opengis.net/ows" xmlns:relevance="http://a9.com/-/opensearch/extensions/relevance/1.0/" xmlns:rim="urn:oasis:names:tc:ebxml-regrep:xsd:rim:3.0" xmlns:srv="http://www.isotc211.org/2005/srv" xmlns:wrs="http://www.opengis.net/cat/wrs/1.0" xmlns:xlink="http://www.w3.org/1999/xlink">
+         
+         <srv:SV_ServiceIdentification>
+            
+            
+            <gmd:citation/>
+            
+            <gmd:abstract/>
+            
+            <srv:serviceType/>
+            
+            <srv:couplingType/>
+            
+            <srv:containsOperations/>
+            
+            
+         </srv:SV_ServiceIdentification>
+         
+      </gmd:identificationInfo>
+</entry>
+</feed>
