@@ -24,7 +24,7 @@ describe GiCatDriver do
     end
   end
 
-  describe "profile configurations"
+  describe "profile configurations" do
     it "retrieves the active profile id" do
       request_url = @base_url + "services/conf/giconf/configuration"
       stub_request(:get, request_url)
@@ -109,9 +109,17 @@ describe GiCatDriver do
       a_request(:get, active_conf_url).with(:query => {:nameRepository => "gicat"}).should have_been_made.once
       expect(@gi_cat.get_active_profile_id).to eq "1"
     end
+
+    it "adds a profile" do
+      true.should be_false
+    end
+
+    it "deletes a profile" do
+      true.should be_false
+    end
   end
 
-  describe "Lucene indexing"
+  describe "Lucene indexing" do
     it "enables Lucene for the active profile" do
       enable_lucene_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations/1/luceneEnabled"
       stub_request(:put,enable_lucene_url)
@@ -191,6 +199,56 @@ describe GiCatDriver do
 
       @gi_cat.is_lucene_enabled?.should be_false
     end
-
   end
+
+  describe "resource harvesting into the database" do
+    it "harvests all resources for the active profile" do
+      conf_request_url = "http://www.somecompany.com/services/conf/giconf/configuration"
+      stub_request(:get,conf_request_url)
+        .with(:headers => {
+          'Accept'=>'*/*',
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+          'User-Agent'=>'Ruby',
+          'Content-Type'=>'application/xml'
+        }).to_return(:status => 200, :body => "1", :headers => {})
+
+      request_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations/1"
+      stub_request(:get,request_url)
+        .with(:headers => {
+          'Accept'=>'application/xml',
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+          'User-Agent'=>'Ruby',
+          'Content-Type'=>'*/*'
+        })
+        .to_return(:status => 200, :body => File.new("spec/fixtures/brokerConfigurations.xml"), :headers => {})
+
+      get_resources_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations/1/distributors/UUID-6c89ab7d-82aa-446c-902e-0b1f6e412a45"
+      stub_request(:get, get_resources_url)
+        .with(:headers => {
+          'Accept'=>'application/xml',
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+          'User-Agent'=>'Ruby',
+          'Content-Type'=>'*/*'
+        })
+        .to_return(:status => 200, :body => File.new("spec/fixtures/distributors.xml"), :headers => {})
+
+      start_harvest_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations/1/harvesters/UUID-a5d11731-9a58-4818-8018-c085cea8b6e3/start"
+      stub_request(:get, start_harvest_url)
+        .with(:headers => {
+          'Accept'=>'application/xml',
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+          'Content-Type'=>'*/*',
+          'User-Agent'=>'Ruby'
+        })
+        .to_return(:status => 200, :body => "", :headers => {})
+
+      harvest_status_url = "http://admin:pass@www.somecompany.com/services/conf/giconf/status?id=UUID-a5d11731-9a58-4818-8018-c085cea8b6e3"
+      stub_request(:get, harvest_status_url).
+        with(:headers => {'Accept'=>'application/xml', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Content-Type' => '*/*', 'User-Agent' => 'Ruby'}).
+        to_return(:status => 200, :body => File.new("spec/fixtures/status.xml"), :headers => [])
+
+      @gi_cat.harvest_all_resources_for_active_configuration
+    end
+  end
+
 end

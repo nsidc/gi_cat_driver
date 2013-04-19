@@ -126,8 +126,11 @@ module GiCatDriver
     # Retrive the distributor id given a profile id
     def get_active_profile_distributor_id(id)
       active_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{id}"
-      response = Faraday.get(active_profile_request, STANDARD_HEADERS)
-      id = Nokogiri::XML(response.body).css("component id").text
+      response = Faraday.get do |req|
+        req.url active_profile_request
+        req.headers = AUTHORIZATION_HEADERS
+      end
+      id = Nokogiri.XML(response.body).css("component id").text
       return id
     end
 
@@ -135,7 +138,10 @@ module GiCatDriver
     def get_harvest_resources(profile_id)
       id = get_active_profile_distributor_id(profile_id)
       harvest_resource_request = "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}/distributors/#{id}"
-      response = Faraday.get(harvest_resource_request, STANDARD_HEADERS)
+      response = Faraday.get do |req|
+        req.url harvest_resource_request
+        req.headers = AUTHORIZATION_HEADERS
+      end
       doc = Nokogiri::XML(response.body)
       harvestersinfo_array = {}
       doc.css("component").each do |component|
@@ -146,53 +152,38 @@ module GiCatDriver
 
     # Harvest from specified resource
     def harvest_resource_for_active_configuration(harvesterid, harvestername = "n/a")
-      Faraday.get(
-        "#{@base_url}/services/conf/brokerConfigurations/#{self.get_active_profile_id}/harvesters/#{harvesterid}/start",
-        AUTHORIZATION_HEADERS) do |response, request, result, &block|
-          case response.code
-          when 200
-            puts "#{Time.now}: Initiate harvesting GI-Cat resource #{harvestername}. Please wait a couple minutes for the process to complete."
-          else
-            raise "Failed to initiate harvesting GI-Cat resource #{harvestername}."
-            response.return!(request, result, &block)
-          end
-        end
-    end
+      response = Faraday.get do |req|
+        req.url "#{@base_url}/services/conf/brokerConfigurations/#{self.get_active_profile_id}/harvesters/#{harvesterid}/start"
+        req.headers = AUTHORIZATION_HEADERS
+      end
 
-    # Parsing and handle the harvest status
-    def harvest_status(status, harvestername="default")
-      timestamp = Time.now
-      puts "#{Time.now}: Harvest #{harvestername} status: #{status}"
-      case status
-      when /Harvesting completed/
-        return :completed
-      when /Harvesting error/
-        return :error
+      if response.status == 200
+        puts "#{Time.now}: Initiate harvesting GI-Cat resource #{harvestername}. Please wait a couple minutes for the process to complete."
       else
-        return :pending
+        raise "Failed to initiate harvesting GI-Cat resource #{harvestername}."
+        response.return!(request, result, &block)
       end
     end
 
-    # Run till the harvest of a resource is completed
-    def harvest_request_is_done(harvesterid, harvestername="n/a")
+    # Run a loop to request GI-Cat for the status of a harvest
+    def harvest_request_is_done(harvester_id, harvester_name="n/a")
       while(1) do
-        sleep 10    # Wait for ten seconds
+        sleep 1    # Wait for one second
 
-        rnum=rand
-        request = @base_url + "/services/conf/giconf/status?id=#{harvesterid}&rand=#{rnum}"
+#        rnum=rand   # Generate unique request to attempt to bypass cache
+        request = @base_url + "/services/conf/giconf/status?id=#{harvester_id}"
 
-        response = Faraday.get request, STANDARD_HEADERS
-        responsexml = Nokogiri::XML::Reader(response.body)
-        responsexml.each do |node|
-          if node.name == "status" && !node.inner_xml.empty?
-            status = harvest_status(node.inner_xml, harvestername)
-            if status.eql? :error
-              fail "Error harvesting the resource #{harvestername}"
-            elsif status.eql? :completed
-              puts "Succesfully harvested #{harvestername}"
-              return
-            end
-          end
+        response = Faraday.get do |req|
+          req.url request
+          req.headers = AUTHORIZATION_HEADERS
+        end
+
+        status = parse_status_xml(response.body, harvester_name)
+        if status.eql? :error
+          fail "Error harvesting the resource #{harvester_name}"
+        elsif status.eql? :completed
+          puts "Succesfully harvested #{harvester_name}"
+          break
         end
       end
     end
@@ -217,6 +208,25 @@ module GiCatDriver
       raise "The profile '" + profile_name + "' does not exist!" if profile.empty?
 
       return profile.attr('id').value
+    end
+
+    def parse_status_xml( xml_doc, harvester_name )
+        xml = Nokogiri.XML(xml_doc)
+
+        status = xml.css("status").text
+        timestamp = Time.now
+
+        puts "#{Time.now}: Harvest #{harvester_name} status: #{status}"
+
+        case status
+        when /Harvesting completed/
+          return :completed
+        when /Harvesting error/
+          return :error
+        else
+          return :pending
+        end
+
     end
 
   end
