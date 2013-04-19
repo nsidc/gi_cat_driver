@@ -37,7 +37,7 @@
         <div class='highlight'><pre><span class="nb">require</span> <span class="s2">&quot;gi_cat_driver/version&quot;</span>
 <span class="nb">require</span> <span class="s2">&quot;gi_cat_driver/esip_opensearch_query_builder&quot;</span>
 <span class="nb">require</span> <span class="s2">&quot;open-uri&quot;</span>
-<span class="nb">require</span> <span class="s2">&quot;faraday&quot;</span>
+<span class="nb">require</span> <span class="s2">&quot;rest-client&quot;</span>
 <span class="nb">require</span> <span class="s2">&quot;base64&quot;</span>
 <span class="nb">require</span> <span class="s1">&#39;nokogiri&#39;</span>
 <span class="nb">require</span> <span class="s1">&#39;timeout&#39;</span></pre></div>
@@ -83,8 +83,7 @@
         <p>Set up a constant containing the standard request headers</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>      <span class="nb">self</span><span class="o">.</span><span class="n">class</span><span class="o">.</span><span class="n">const_set</span><span class="p">(</span><span class="s2">&quot;STANDARD_HEADERS&quot;</span><span class="p">,</span> <span class="p">{</span> <span class="ss">:content_type</span> <span class="o">=&gt;</span> <span class="s2">&quot;application/xml&quot;</span> <span class="p">})</span>
-      <span class="nb">self</span><span class="o">.</span><span class="n">class</span><span class="o">.</span><span class="n">const_set</span><span class="p">(</span><span class="s2">&quot;AUTHORIZATION_HEADERS&quot;</span><span class="p">,</span> <span class="p">{</span> <span class="ss">:content_type</span> <span class="o">=&gt;</span> <span class="s2">&quot;*/*&quot;</span><span class="p">,</span> <span class="ss">:Accept</span> <span class="o">=&gt;</span> <span class="s2">&quot;application/xml&quot;</span><span class="p">,</span> <span class="ss">:Authorization</span> <span class="o">=&gt;</span> <span class="nb">self</span><span class="o">.</span><span class="n">basic_auth_string</span> <span class="p">})</span>
+        <div class='highlight'><pre>      <span class="nb">self</span><span class="o">.</span><span class="n">class</span><span class="o">.</span><span class="n">const_set</span><span class="p">(</span><span class="s2">&quot;STANDARD_HEADERS&quot;</span><span class="p">,{</span> <span class="ss">:content_type</span> <span class="o">=&gt;</span> <span class="s2">&quot;application/xml&quot;</span><span class="p">,</span> <span class="ss">:Authorization</span> <span class="o">=&gt;</span> <span class="nb">self</span><span class="o">.</span><span class="n">basic_auth_string</span> <span class="p">})</span>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
@@ -110,7 +109,7 @@
       </td>
       <td class=code>
         <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">is_running?</span>
-      <span class="no">Faraday</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="vi">@base_url</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="mi">200</span>
+      <span class="nb">open</span><span class="p">(</span><span class="vi">@base_url</span><span class="p">)</span><span class="o">.</span><span class="n">status</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span> <span class="o">==</span> <span class="s2">&quot;200&quot;</span>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
@@ -124,14 +123,15 @@ Returns an integer ID reference to the profile</p>
       </td>
       <td class=code>
         <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">find_profile_id</span><span class="p">(</span> <span class="n">profile_name</span> <span class="p">)</span>
-      <span class="n">response</span> <span class="o">=</span> <span class="no">Faraday</span><span class="o">.</span><span class="n">get</span> <span class="k">do</span> <span class="o">|</span><span class="n">req</span><span class="o">|</span>
-        <span class="n">req</span><span class="o">.</span><span class="n">url</span> <span class="vi">@base_url</span> <span class="o">+</span> <span class="s1">&#39;/services/conf/brokerConfigurations&#39;</span><span class="p">,</span> <span class="ss">:nameRepository</span> <span class="o">=&gt;</span> <span class="s1">&#39;gicat&#39;</span>
-        <span class="n">req</span><span class="o">.</span><span class="n">headers</span> <span class="o">=</span> <span class="no">AUTHORIZATION_HEADERS</span>
-      <span class="k">end</span>
+      <span class="n">get_profiles_request</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@base_url</span><span class="si">}</span><span class="s2">/services/conf/brokerConfigurations?nameRepository=gicat&quot;</span>
+      <span class="n">modified_headers</span> <span class="o">=</span> <span class="no">STANDARD_HEADERS</span><span class="o">.</span><span class="n">merge</span><span class="p">({</span>
+        <span class="ss">:content_type</span> <span class="o">=&gt;</span> <span class="s2">&quot;*/*&quot;</span><span class="p">,</span>
+        <span class="ss">:Accept</span> <span class="o">=&gt;</span> <span class="s1">&#39;application/xml&#39;</span>
+      <span class="p">})</span>
+      <span class="n">xml_doc</span> <span class="o">=</span> <span class="no">RestClient</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">get_profiles_request</span><span class="p">,</span> <span class="n">modified_headers</span><span class="p">)</span>
+      <span class="n">profile</span> <span class="o">=</span> <span class="n">parse_profile_element</span><span class="p">(</span><span class="n">profile_name</span><span class="p">,</span> <span class="n">xml_doc</span><span class="p">)</span>
 
-      <span class="n">profile_id</span> <span class="o">=</span> <span class="n">parse_profile_element</span><span class="p">(</span><span class="n">profile_name</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
-
-      <span class="k">return</span> <span class="n">profile_id</span>
+      <span class="k">return</span> <span class="p">(</span><span class="n">profile</span><span class="o">.</span><span class="n">empty?</span> <span class="p">?</span> <span class="kp">nil</span> <span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">attr</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
@@ -140,17 +140,15 @@ Returns an integer ID reference to the profile</p>
         <div class="pilwrap">
           <a class="pilcrow" href="#section-8">&#182;</a>
         </div>
-        <p>Returns an integer ID reference to the active profile</p>
+        <p>Enable a profile with the specified name</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">get_active_profile_id</span>
-      <span class="n">response</span> <span class="o">=</span> <span class="no">Faraday</span><span class="o">.</span><span class="n">get</span> <span class="k">do</span> <span class="o">|</span><span class="n">req</span><span class="o">|</span>
-        <span class="n">req</span><span class="o">.</span><span class="n">url</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@base_url</span><span class="si">}</span><span class="s2">/services/conf/giconf/configuration&quot;</span>
-        <span class="n">req</span><span class="o">.</span><span class="n">headers</span> <span class="o">=</span> <span class="no">STANDARD_HEADERS</span>
-      <span class="k">end</span>
+        <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">enable_profile</span><span class="p">(</span> <span class="n">profile_name</span> <span class="p">)</span>
+      <span class="n">profile_id</span> <span class="o">=</span> <span class="n">find_profile_id</span><span class="p">(</span><span class="n">profile_name</span><span class="p">)</span>
+      <span class="k">raise</span> <span class="s2">&quot;The specified profile could not be found.&quot;</span> <span class="k">if</span> <span class="n">profile_id</span><span class="o">.</span><span class="n">nil?</span>
+      <span class="n">activate_profile_request</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@base_url</span><span class="si">}</span><span class="s2">/services/conf/brokerConfigurations/</span><span class="si">#{</span><span class="n">profile_id</span><span class="si">}</span><span class="s2">?opts=active&quot;</span>
 
-      <span class="n">profile_id</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">body</span>
-      <span class="k">return</span> <span class="n">profile_id</span>
+      <span class="no">RestClient</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">activate_profile_request</span><span class="p">,</span> <span class="no">STANDARD_HEADERS</span><span class="p">)</span>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
@@ -159,14 +157,13 @@ Returns an integer ID reference to the profile</p>
         <div class="pilwrap">
           <a class="pilcrow" href="#section-9">&#182;</a>
         </div>
-        <p>Enable a profile with the specified name</p>
+        <p>Returns an integer ID reference to the active profile</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">enable_profile</span><span class="p">(</span> <span class="n">profile_name</span> <span class="p">)</span>
-      <span class="no">Faraday</span><span class="o">.</span><span class="n">get</span> <span class="k">do</span> <span class="o">|</span><span class="n">req</span><span class="o">|</span>
-        <span class="n">req</span><span class="o">.</span><span class="n">url</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@base_url</span><span class="si">}</span><span class="s2">/services/conf/brokerConfigurations/</span><span class="si">#{</span><span class="n">find_profile_id</span><span class="p">(</span><span class="n">profile_name</span><span class="p">)</span><span class="si">}</span><span class="s2">?opts=active&quot;</span>
-        <span class="n">req</span><span class="o">.</span><span class="n">headers</span> <span class="o">=</span> <span class="no">AUTHORIZATION_HEADERS</span>
-      <span class="k">end</span>
+        <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">get_active_profile_id</span>
+      <span class="n">active_profile_request</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@base_url</span><span class="si">}</span><span class="s2">/services/conf/giconf/configuration&quot;</span>
+
+      <span class="k">return</span> <span class="no">RestClient</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">active_profile_request</span><span class="p">,</span> <span class="no">STANDARD_HEADERS</span><span class="p">)</span>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
@@ -208,7 +205,7 @@ Returns true if Lucene is turned on</p>
       </td>
       <td class=code>
         <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">is_lucene_enabled?</span>
-      <span class="n">query_string</span> <span class="o">=</span> <span class="ss">EsipOpensearchQueryBuilder</span><span class="p">:</span><span class="ss">:get_query_string</span><span class="p">({</span> <span class="ss">:st</span> <span class="o">=&gt;</span> <span class="s2">&quot;arctic%20alaskan%20shrubs&quot;</span> <span class="p">})</span>
+      <span class="n">query_string</span> <span class="o">=</span> <span class="ss">EsipOpensearchQueryBuilder</span><span class="p">:</span><span class="ss">:get_query_string</span><span class="p">({</span> <span class="ss">:st</span> <span class="o">=&gt;</span> <span class="s2">&quot;snow&quot;</span> <span class="p">})</span>
       <span class="n">results</span> <span class="o">=</span> <span class="ss">Nokogiri</span><span class="p">:</span><span class="ss">:XML</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@base_url</span><span class="si">}</span><span class="s2">/services/opensearchesip</span><span class="si">#{</span><span class="n">query_string</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">))</span>
 
       <span class="n">result_scores</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">xpath</span><span class="p">(</span><span class="s1">&#39;//atom:feed/atom:entry/relevance:score&#39;</span><span class="p">,</span> <span class="no">ATOM_NAMESPACE</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="no">RELEVANCE_NAMESPACE</span><span class="p">))</span>
@@ -244,27 +241,48 @@ The default timeout is 1500 seconds (25 minutes)</p>
         <h3>Private Methods</h3>
       </td>
       <td class=code>
-        <div class='highlight'><pre>    <span class="kp">private</span>
-
-    <span class="k">def</span> <span class="nf">set_lucene_enabled</span><span class="p">(</span> <span class="n">enabled</span> <span class="p">)</span>
-      <span class="n">enable_lucene_request</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@base_url</span><span class="si">}</span><span class="s2">/services/conf/brokerConfigurations/</span><span class="si">#{</span><span class="n">get_active_profile_id</span><span class="si">}</span><span class="s2">/luceneEnabled&quot;</span>
-      <span class="no">Faraday</span><span class="o">.</span><span class="n">put</span> <span class="k">do</span> <span class="o">|</span><span class="n">req</span><span class="o">|</span>
-        <span class="n">req</span><span class="o">.</span><span class="n">url</span> <span class="n">enable_lucene_request</span>
-        <span class="n">req</span><span class="o">.</span><span class="n">body</span> <span class="o">=</span> <span class="n">enabled</span><span class="o">.</span><span class="n">to_s</span>
-        <span class="n">req</span><span class="o">.</span><span class="n">headers</span> <span class="o">=</span> <span class="no">AUTHORIZATION_HEADERS</span>
-        <span class="n">req</span><span class="o">.</span><span class="n">options</span><span class="o">[</span><span class="ss">:timeout</span><span class="o">]</span> <span class="o">=</span> <span class="mi">300</span>
-      <span class="k">end</span>
-
-      <span class="n">activate_profile_request</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@base_url</span><span class="si">}</span><span class="s2">/services/conf/brokerConfigurations/</span><span class="si">#{</span><span class="n">get_active_profile_id</span><span class="si">}</span><span class="s2">&quot;</span>
-      <span class="no">Faraday</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">activate_profile_request</span><span class="p">,</span> <span class="p">{</span> <span class="ss">:opts</span> <span class="o">=&gt;</span> <span class="s2">&quot;active&quot;</span> <span class="p">},</span>
-        <span class="no">AUTHORIZATION_HEADERS</span><span class="p">)</span>
-    <span class="k">end</span></pre></div>
+        <div class='highlight'><pre>    <span class="kp">private</span></pre></div>
       </td>
     </tr>
     <tr id='section-15'>
       <td class=docs>
         <div class="pilwrap">
           <a class="pilcrow" href="#section-15">&#182;</a>
+        </div>
+        <p>Toggle lucene indexes on when enabled is true, off when false</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">set_lucene_enabled</span><span class="p">(</span> <span class="n">enabled</span> <span class="p">)</span>
+      <span class="n">enable_lucene_request</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@base_url</span><span class="si">}</span><span class="s2">/services/conf/brokerConfigurations/</span><span class="si">#{</span><span class="n">get_active_profile_id</span><span class="si">}</span><span class="s2">/luceneEnabled&quot;</span>
+      <span class="no">RestClient</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">enable_lucene_request</span><span class="p">,</span>
+        <span class="n">enabled</span><span class="o">.</span><span class="n">to_s</span><span class="p">,</span>
+        <span class="no">STANDARD_HEADERS</span><span class="p">)</span>
+
+      <span class="n">activate_profile_request</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@base_url</span><span class="si">}</span><span class="s2">/services/conf/brokerConfigurations/</span><span class="si">#{</span><span class="n">get_active_profile_id</span><span class="si">}</span><span class="s2">?opts=active&quot;</span>
+      <span class="no">RestClient</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">activate_profile_request</span><span class="p">,</span>
+        <span class="no">STANDARD_HEADERS</span><span class="p">)</span>
+    <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-16'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-16">&#182;</a>
+        </div>
+        <p>Retrieve the profile element using the name</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">parse_profile_element</span><span class="p">(</span> <span class="n">profile_name</span><span class="p">,</span> <span class="n">xml_doc</span> <span class="p">)</span>
+      <span class="n">configs</span> <span class="o">=</span> <span class="no">Nokogiri</span><span class="o">.</span><span class="n">XML</span><span class="p">(</span><span class="n">xml_doc</span><span class="p">)</span>
+
+      <span class="k">return</span> <span class="n">configs</span><span class="o">.</span><span class="n">css</span><span class="p">(</span><span class="s2">&quot;brokerConfiguration[name=</span><span class="si">#{</span><span class="n">profile_name</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
+    <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-17'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-17">&#182;</a>
         </div>
         <p>Retrive the distributor id given a profile id</p>
       </td>
@@ -277,10 +295,10 @@ The default timeout is 1500 seconds (25 minutes)</p>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-16'>
+    <tr id='section-18'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-16">&#182;</a>
+          <a class="pilcrow" href="#section-18">&#182;</a>
         </div>
         <p>Given a profile id, put all the associated resource id and title into harvest info array</p>
       </td>
@@ -298,16 +316,16 @@ The default timeout is 1500 seconds (25 minutes)</p>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-17'>
+    <tr id='section-19'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-17">&#182;</a>
+          <a class="pilcrow" href="#section-19">&#182;</a>
         </div>
         <p>Harvest from specified resource</p>
       </td>
       <td class=code>
         <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">harvest_resource_for_active_configuration</span><span class="p">(</span><span class="n">harvesterid</span><span class="p">,</span> <span class="n">harvestername</span> <span class="o">=</span> <span class="s2">&quot;n/a&quot;</span><span class="p">)</span>
-      <span class="no">Faraday</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+      <span class="no">RestClient</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
         <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@base_url</span><span class="si">}</span><span class="s2">/services/conf/brokerConfigurations/</span><span class="si">#{</span><span class="nb">self</span><span class="o">.</span><span class="n">get_active_profile_id</span><span class="si">}</span><span class="s2">/harvesters/</span><span class="si">#{</span><span class="n">harvesterid</span><span class="si">}</span><span class="s2">/start&quot;</span><span class="p">,</span>
         <span class="no">STANDARD_HEADERS</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">response</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="o">|</span>
           <span class="k">case</span> <span class="n">response</span><span class="o">.</span><span class="n">code</span>
@@ -321,10 +339,10 @@ The default timeout is 1500 seconds (25 minutes)</p>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-18'>
+    <tr id='section-20'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-18">&#182;</a>
+          <a class="pilcrow" href="#section-20">&#182;</a>
         </div>
         <p>Parsing and handle the harvest status</p>
       </td>
@@ -343,10 +361,10 @@ The default timeout is 1500 seconds (25 minutes)</p>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-19'>
+    <tr id='section-21'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-19">&#182;</a>
+          <a class="pilcrow" href="#section-21">&#182;</a>
         </div>
         <p>Run till the harvest of a resource is completed</p>
       </td>
@@ -357,15 +375,15 @@ The default timeout is 1500 seconds (25 minutes)</p>
 
         <span class="n">rnum</span><span class="o">=</span><span class="nb">rand</span>
         <span class="n">request</span> <span class="o">=</span> <span class="vi">@base_url</span> <span class="o">+</span> <span class="s2">&quot;/services/conf/giconf/status?id=</span><span class="si">#{</span><span class="n">harvesterid</span><span class="si">}</span><span class="s2">&amp;rand=</span><span class="si">#{</span><span class="n">rnum</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="no">RestClient</span><span class="o">.</span><span class="n">get</span> <span class="n">request</span>
 
-        <span class="n">response</span> <span class="o">=</span> <span class="no">Faraday</span><span class="o">.</span><span class="n">get</span> <span class="n">request</span>
-        <span class="n">responsexml</span> <span class="o">=</span> <span class="ss">Nokogiri</span><span class="p">:</span><span class="ss">:XML</span><span class="o">::</span><span class="no">Reader</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
+        <span class="n">responsexml</span> <span class="o">=</span> <span class="ss">Nokogiri</span><span class="p">:</span><span class="ss">:XML</span><span class="o">::</span><span class="no">Reader</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
         <span class="n">responsexml</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">node</span><span class="o">|</span>
           <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;status&quot;</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">node</span><span class="o">.</span><span class="n">inner_xml</span><span class="o">.</span><span class="n">empty?</span>
             <span class="n">status</span> <span class="o">=</span> <span class="n">harvest_status</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">inner_xml</span><span class="p">,</span> <span class="n">harvestername</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">status</span><span class="o">.</span><span class="n">eql?</span> <span class="ss">:error</span>
+            <span class="k">if</span> <span class="n">status</span><span class="o">.</span><span class="n">eq</span> <span class="ss">:error</span>
               <span class="nb">fail</span> <span class="s2">&quot;Error harvesting the resource </span><span class="si">#{</span><span class="n">harvestername</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="k">elsif</span> <span class="n">status</span><span class="o">.</span><span class="n">eql?</span> <span class="ss">:completed</span>
+            <span class="k">elsif</span> <span class="n">status</span><span class="o">.</span><span class="n">eq</span> <span class="ss">:completed</span>
               <span class="nb">puts</span> <span class="s2">&quot;Succesfully harvested </span><span class="si">#{</span><span class="n">harvestername</span><span class="si">}</span><span class="s2">&quot;</span>
               <span class="k">return</span>
             <span class="k">end</span>
@@ -375,10 +393,10 @@ The default timeout is 1500 seconds (25 minutes)</p>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-20'>
+    <tr id='section-22'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-20">&#182;</a>
+          <a class="pilcrow" href="#section-22">&#182;</a>
         </div>
         <p>Run till harvest all the resources are completed or time out</p>
 
@@ -395,14 +413,6 @@ The default timeout is 1500 seconds (25 minutes)</p>
       <span class="k">rescue</span> <span class="ss">Timeout</span><span class="p">:</span><span class="ss">:Error</span>
         <span class="nb">puts</span> <span class="s2">&quot;Warning: re-harvest is time out(</span><span class="si">#{</span><span class="n">waitmax</span><span class="si">}</span><span class="s2"> seconds, we are going to reuse the previous harvest results&quot;</span>
       <span class="k">end</span>
-    <span class="k">end</span>
-
-    <span class="k">def</span> <span class="nf">parse_profile_element</span><span class="p">(</span> <span class="n">profile_name</span><span class="p">,</span> <span class="n">xml_doc</span> <span class="p">)</span>
-      <span class="n">configs</span> <span class="o">=</span> <span class="no">Nokogiri</span><span class="o">.</span><span class="n">XML</span><span class="p">(</span><span class="n">xml_doc</span><span class="p">)</span>
-      <span class="n">profile</span> <span class="o">=</span> <span class="n">configs</span><span class="o">.</span><span class="n">css</span><span class="p">(</span><span class="s2">&quot;brokerConfiguration[name=</span><span class="si">#{</span><span class="n">profile_name</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
-      <span class="k">raise</span> <span class="s2">&quot;The profile &#39;&quot;</span> <span class="o">+</span> <span class="n">profile_name</span> <span class="o">+</span> <span class="s2">&quot;&#39; does not exist!&quot;</span> <span class="k">if</span> <span class="n">profile</span><span class="o">.</span><span class="n">empty?</span>
-
-      <span class="k">return</span> <span class="n">profile</span><span class="o">.</span><span class="n">attr</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
     <span class="k">end</span>
 
   <span class="k">end</span>
