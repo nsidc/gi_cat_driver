@@ -264,7 +264,8 @@ describe GiCatDriver do
         })
         .to_return(:status => 200, :body => "", :headers => {})
 
-      harvest_status_url = "http://admin:pass@www.somecompany.com/services/conf/giconf/status?id=UUID-a5d11731-9a58-4818-8018-c085cea8b6e3"
+      @gi_cat.stub(:generate_random_number) {0.1111}
+      harvest_status_url = "http://admin:pass@www.somecompany.com/services/conf/giconf/status?id=UUID-a5d11731-9a58-4818-8018-c085cea8b6e3&rand=0.1111"
       stub_request(:get, harvest_status_url).
         with(:headers => {'Accept'=>'application/xml', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Content-Type' => '*/*', 'User-Agent' => 'Ruby'}).
         to_return(:status => 200, :body => File.new("spec/fixtures/status.xml"), :headers => [])

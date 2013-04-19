@@ -125,8 +125,8 @@ module GiCatDriver
       harvestersinfo_array = get_harvest_resources(get_active_profile_id)
       harvestersinfo_array.each do |harvester_id, harvester_title|
         harvest_resource_for_active_configuration(harvester_id.to_s, harvester_title)
+        confirm_harvest_done(harvester_id, harvester_title, timeout)
       end
-      confirm_harvest_done(harvestersinfo_array, timeout)
     end
 
     #### Private Methods
@@ -194,8 +194,8 @@ module GiCatDriver
       while(1) do
         sleep 1    # Wait for one second
 
-#        rnum=rand   # Generate unique request to attempt to bypass cache
-        request = @base_url + "/services/conf/giconf/status?id=#{harvester_id}"
+        # appending unique number at the end of the request to bypass cache
+        request = @base_url + "/services/conf/giconf/status?id=#{harvester_id}&rand=#{generate_random_number}"
 
         response = Faraday.get do |req|
           req.url request
@@ -213,13 +213,11 @@ module GiCatDriver
     end
 
     # Run till harvest all the resources are completed or time out
-    def confirm_harvest_done(harvestersinfo_array, waitmax)
+    def confirm_harvest_done(harvester_id, harvester_title, waitmax)
       begin
         puts "Info: Max wait time (timeout) for current profile is set to #{waitmax} seconds"
         Timeout::timeout(waitmax.to_i) do
-          harvestersinfo_array.each do |harvester_id, harvester_title|
-            harvest_request_is_done(harvester_id.to_s, harvester_title)
-          end
+          harvest_request_is_done(harvester_id.to_s, harvester_title)
         end
       rescue Timeout::Error
         puts "Warning: re-harvest is time out(#{waitmax} seconds, we are going to reuse the previous harvest results"
