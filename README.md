@@ -43,6 +43,9 @@ Annotated source code documentation is available at http://nsidc.github.com/gi_c
 Rubydoc API documentation is available at http://rubydoc.info/gems/gi_cat_driver/
 
 ## Version History
+* 0.2.2
+  * Added new methods to create and delete profiles
+  * Fixed harvester request headers and now work properly
 * 0.2.1
   * Fixed harvester requests to use Faraday
 * 0.2.0

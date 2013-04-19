@@ -39,11 +39,35 @@ module GiCatDriver
       Faraday.get(@base_url + "/").status == 200
     end
 
+    # Add a new profile with the given name
+    def create_profile( profile_name )
+      response = Faraday.post do |req|
+        req.url "#{@base_url}/services/conf/brokerConfigurations/newBroker"
+        req.body = "inputNewName=#{profile_name}&nameBrokerCopy=%20"
+        req.headers = AUTHORIZATION_HEADERS.merge({'enctype' => 'multipart/form-data',:content_type => 'application/x-www-form-urlencoded'})
+      end
+
+      profile_id = response.body
+      return profile_id
+    end
+
+    # Remove a profile with the given name
+    def delete_profile( profile_name )
+      profile_id = find_profile_id( profile_name )
+      response = Faraday.get do |req|
+        req.url "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}", { :opts => 'delete', :random => generate_random_number }
+        req.headers = AUTHORIZATION_HEADERS.merge({'enctype'=>'multipart/form-data'})
+      end
+
+      profile_id = response.body
+      return profile_id
+    end
+
     # Retrieve the ID for a profile given the name
     # Returns an integer ID reference to the profile
     def find_profile_id( profile_name )
       response = Faraday.get do |req|
-        req.url @base_url + '/services/conf/brokerConfigurations', :nameRepository => 'gicat'
+        req.url "#{@base_url}/services/conf/brokerConfigurations", :nameRepository => 'gicat'
         req.headers = AUTHORIZATION_HEADERS
       end
 
@@ -229,5 +253,8 @@ module GiCatDriver
 
     end
 
+    def generate_random_number
+      return rand
+    end
   end
 end

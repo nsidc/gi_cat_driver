@@ -111,11 +111,33 @@ describe GiCatDriver do
     end
 
     it "adds a profile" do
-      true.should be_false
+      stub_request(:get, "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations").
+        with(:headers => {'Accept'=>'application/xml', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Content-Type'=>'*/*', 'User-Agent'=>'Ruby'}, :query => {:nameRepository => "gicat"}).
+        to_return(:status => 200, :body => "", :headers => {})
+
+      stub_request(:post, "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations/newBroker").
+        with(:headers => {'Accept'=>'application/xml', 'Content-Type'=>'application/x-www-form-urlencoded', 'Enctype'=>'multipart/form-data', 'User-Agent'=>'Ruby'}).
+        to_return(:status => 200, :body => "5", :headers => {})
+
+      profile_id = @gi_cat.create_profile "new-profile"
+
+      profile_id.should eq "5"
     end
 
     it "deletes a profile" do
-      true.should be_false
+      stub_request(:get, "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations").
+        with(:headers => {'Accept'=>'application/xml', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Content-Type'=>'*/*', 'User-Agent'=>'Ruby'}, :query => {:nameRepository => "gicat"}).
+        to_return(:status => 200, :body => File.new("spec/fixtures/brokerConfigurations.xml"), :headers => {})
+
+      @gi_cat.stub(:generate_random_number).and_return("1")
+
+      stub_request(:get, "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations/1?opts=delete&random=1").
+        with(:headers => {'Accept'=>'application/xml', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Content-Type'=>'*/*', 'User-Agent'=>'Ruby'}).
+        to_return(:status => 200, :body => "1", :headers => {})
+
+      profile_id = @gi_cat.delete_profile "some_profile"
+
+      profile_id.should eq "1"
     end
   end
 
