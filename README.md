@@ -43,6 +43,8 @@ Annotated source code documentation is available at http://nsidc.github.com/gi_c
 Rubydoc API documentation is available at http://rubydoc.info/gems/gi_cat_driver/
 
 ## Version History
+* 0.2.4
+  * Added new methods to create and delete accessors (GI-Cat resources) for a profile
 * 0.2.3
   * Changed the harvest to be sequential. (one resource won't start harvest till the current one is completed or timeout)
 * 0.2.2

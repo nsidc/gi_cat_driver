@@ -83,7 +83,7 @@ describe GiCatDriver do
           'User-Agent'=>'Ruby', 
           'Content-Type'=>'*/*'
         }, :query => {:opts => "active"})
-        .to_return(:status => 200, :body => File.new("spec/fixtures/brokerConfigurations.xml"), :headers => {})
+        .to_return(:status => 200, :body => "", :headers => {})
 
       active_conf_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations"
       stub_request(:get,active_conf_url)
@@ -168,7 +168,7 @@ describe GiCatDriver do
           'User-Agent'=>'Faraday v0.8.7', 
           'Content-Type'=>'*/*'
         }, :query => {:opts => "active"})
-        .to_return(:status => 200, :body => File.new("spec/fixtures/brokerConfigurations.xml"), :headers => {})
+        .to_return(:status => 200, :body => "", :headers => {})
 
       query_url = "http://www.somecompany.com/services/opensearchesip?bbox=&ct=&gdc=&lac=&loc=&luc=&outputFormat=&rel=&si=&st=arctic%20alaskan%20shrubs&te=&ts="
       stub_request(:get, query_url)
@@ -208,7 +208,7 @@ describe GiCatDriver do
           'User-Agent'=>'Faraday v0.8.7', 
           'Content-Type'=>'*/*'
         }, :query => {:opts => "active"})
-        .to_return(:status => 200, :body => File.new("spec/fixtures/brokerConfigurations.xml"), :headers => {})
+        .to_return(:status => 200, :body => "", :headers => {})
 
       query_url = "http://www.somecompany.com/services/opensearchesip?bbox=&ct=&gdc=&lac=&loc=&luc=&outputFormat=&rel=&si=&st=arctic%20alaskan%20shrubs&te=&ts="
       stub_request(:get, query_url)
@@ -271,6 +271,48 @@ describe GiCatDriver do
         to_return(:status => 200, :body => File.new("spec/fixtures/status.xml"), :headers => [])
 
       @gi_cat.harvest_all_resources_for_active_configuration
+    end
+  end
+
+  describe "accessor (xml feed resource) configurations" do
+    it "creates a new feed resource for a profile" do
+      profile_name = 'some_profile'
+      accessor_configuration = {:nameComponent => 'fixture-nsidc-oai', :endPoint => 'http://scm.nsidc.org:3000/nsidc/oai.htm', :type => 'OAI-PMH/DIF', :versions => '2.0', :comment => '', :bindingAccessor => 'HTTP_GET', :nameContactPoint => '', :organizationContact => '', :mailContactPoint => '', :telephoneContactPoint => '', :startDate => '', :interval => 'P0Y0M0DT0H0M0S', :typeComponent => 'harvester', :stop => ''}
+
+      stub_request(:get, "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations").
+        with(:headers => {'Accept'=>'application/xml', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Content-Type'=>'*/*'}, :query => {:nameRepository => 'gicat'}).
+        to_return(:status => 200, :body => File.new("spec/fixtures/brokerConfigurations.xml"), :headers => {})
+
+      enable_conf_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations/1"
+      stub_request(:get,enable_conf_url)
+        .with(:headers => {
+          'Accept'=>'application/xml', 
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
+          'User-Agent'=>'Ruby', 
+          'Content-Type'=>'*/*'
+        })
+        .to_return(:status => 200, :body => File.new("spec/fixtures/brokerConfigurations.xml"), :headers => {})
+
+      get_resources_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations/1/distributors/UUID-6c89ab7d-82aa-446c-902e-0b1f6e412a45"
+      stub_request(:post, get_resources_url)
+        .with(:headers => {
+          'Accept'=>'application/xml',
+          'User-Agent'=>'Ruby',
+          'Content-Type'=>'application/x-www-form-urlencoded'
+        }, :body => accessor_configuration)
+        .to_return(:status => 200, :body => "UUID-dfe61211-56f4-4fb9-9f99-a7f4d95916c,UUID-0cd0c6a9-498c-400a-9bdd-20778ec62beb", :headers => {})
+
+      update_resource_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations/1/accessors/UUID-dfe61211-56f4-4fb9-9f99-a7f4d95916c/update"
+      stub_request(:post, update_resource_url)
+        .with(:headers => {
+          'Accept'=>'application/xml',
+          'User-Agent'=>'Ruby',
+          'Enctype'=>'multipart/form-data',
+          'Content-Type'=>'application/x-www-form-urlencoded'
+        }, :body => accessor_configuration)
+        .to_return(:status => 200, :body => "Salvato", :headers => {})
+
+      @gi_cat.create_accessor(profile_name, accessor_configuration)
     end
   end
 

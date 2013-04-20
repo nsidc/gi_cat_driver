@@ -129,6 +129,36 @@ module GiCatDriver
       end
     end
 
+    # Create an accessor (xml feed resource) for the given profile with the provided accessor configuration
+    def create_accessor( profile_name, accessor_configuration )
+      profile_id = find_profile_id( profile_name )
+      distributor_id = get_active_profile_distributor_id(profile_id)
+
+      response = Faraday.post do |req|
+        req.url "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}/distributors/#{distributor_id}"
+        req.headers = AUTHORIZATION_HEADERS.merge({:enctype=>'multipart/form-data', :content_type=>'application/x-www-form-urlencoded'})
+        req.body = accessor_configuration
+      end
+
+      # The response contains a comma separated list of the accessor id as well as the harvester id
+      (accessor_id, harvester_id) = response.body.split(',', 2)
+
+      update_accessor_configuration( profile_id, accessor_id, accessor_configuration )
+
+      return accessor_id
+    end
+
+    # Remove an accessor (xml feed resource) with the given name from the given profile
+    def delete_accessor( profile_name, accessor_name )
+      profile_id = find_profile_id(profile_name)
+      harvester_id = find_harvester_id(profile_name, accessor_name)
+
+      Faraday.get do |req|
+        req.url "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}/harvesters/#{harvester_id}", { :delete => 'true', :random => generate_random_number }
+        req.headers = AUTHORIZATION_HEADERS.merge({:enctype=>'multipart/form-data'})
+      end
+    end
+
     #### Private Methods
 
     private
@@ -147,15 +177,37 @@ module GiCatDriver
         AUTHORIZATION_HEADERS)
     end
 
-    # Retrive the distributor id given a profile id
-    def get_active_profile_distributor_id(id)
-      active_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{id}"
+    # Retrieve the harvester id given a profile name and accessor name
+    def find_harvester_id( profile_name, accessor_name )
+      profile_id = find_profile_id(profile_name)
+
+      distributor_id = get_active_profile_distributor_id(profile_id)
+
+      harvester_id = get_active_profile_harvester_id(profile_id, distributor_id)
+
+      return harvester_id
+    end
+
+    # Retrieve the distributor id given a profile id
+    def get_active_profile_distributor_id(profile_id)
+      active_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}"
       response = Faraday.get do |req|
         req.url active_profile_request
         req.headers = AUTHORIZATION_HEADERS
       end
-      id = Nokogiri.XML(response.body).css("component id").text
-      return id
+      distributor_id = Nokogiri.XML(response.body).css("component id").text
+      return distributor_id
+    end
+
+    # Retrieve the harvester id given a profile id and distributor id
+    def get_active_profile_harvester_id(profile_id, distributor_id)
+      harvester_request = "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}/distributors/#{distributor_id}"
+      response = Faraday.get do |req|
+        req.url harvester_request
+        req.headers = AUTHORIZATION_HEADERS
+      end
+      harvester_id = Nokogiri.XML(response.body).css("component id").text
+      return harvester_id
     end
 
     # Given a profile id, put all the associated resource id and title into harvest info array
@@ -249,6 +301,15 @@ module GiCatDriver
           return :pending
         end
 
+    end
+
+    def update_accessor_configuration( profile_id, accessor_id, accessor_configuration )
+      response = Faraday.post do |req|
+        req.url "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}/accessors/#{accessor_id}/update"
+        req.headers = AUTHORIZATION_HEADERS.merge({:enctype=>'multipart/form-data', :content_type=>'application/x-www-form-urlencoded'})
+        req.body = accessor_configuration
+      end
+      return response.body
     end
 
     def generate_random_number
