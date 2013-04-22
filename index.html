@@ -66,6 +66,7 @@
   <span class="k">class</span> <span class="nc">GiCat</span>
 
     <span class="no">ATOM_NAMESPACE</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">&quot;atom&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;http://www.w3.org/2005/Atom&quot;</span> <span class="p">}</span>
+    <span class="no">OPENSEARCH_NAMESPACE</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">&quot;opensearch&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;http://a9.com/-/spec/opensearch/1.1/&quot;</span> <span class="p">}</span>
     <span class="no">RELEVANCE_NAMESPACE</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">&quot;relevance&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;http://a9.com/-/opensearch/extensions/relevance/1.0/&quot;</span> <span class="p">}</span>
     <span class="kp">attr_accessor</span> <span class="ss">:base_url</span>
 
@@ -241,6 +242,27 @@ Returns an integer ID reference to the profile</p>
         <div class="pilwrap">
           <a class="pilcrow" href="#section-14">&#182;</a>
         </div>
+        <p>Perform an ESIP OpenSearch query using a search term against GI-Cat and returns a Nokogiri XML document</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">query_esip_opensearch</span><span class="p">(</span> <span class="n">search_term</span> <span class="p">)</span>
+      <span class="n">query_string</span> <span class="o">=</span> <span class="ss">EsipOpensearchQueryBuilder</span><span class="p">:</span><span class="ss">:get_query_string</span><span class="p">({</span> <span class="ss">:st</span> <span class="o">=&gt;</span> <span class="n">search_term</span> <span class="p">})</span>
+
+      <span class="k">begin</span>
+        <span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@base_url</span><span class="si">}</span><span class="s2">/services/opensearchesip</span><span class="si">#{</span><span class="n">query_string</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+      <span class="k">rescue</span> <span class="o">=&gt;</span> <span class="n">e</span>
+        <span class="k">raise</span> <span class="s2">&quot;Failed to query GI-Cat ESIP OpenSearch interface.&quot;</span>
+      <span class="k">end</span>
+
+      <span class="k">return</span> <span class="ss">Nokogiri</span><span class="p">:</span><span class="ss">:XML</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+    <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-15'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-15">&#182;</a>
+        </div>
         <p>Find out whether Lucene indexing is turned on for the current profile
 It is desirable to use REST to query GI-Cat for the value of this setting but GI-Cat does not yet support this.<br>
 Instead, run a query and check that a &#39;relevance:score&#39; element is present.
@@ -248,8 +270,7 @@ Returns true if Lucene is turned on</p>
       </td>
       <td class=code>
         <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">is_lucene_enabled?</span>
-      <span class="n">query_string</span> <span class="o">=</span> <span class="ss">EsipOpensearchQueryBuilder</span><span class="p">:</span><span class="ss">:get_query_string</span><span class="p">({</span> <span class="ss">:st</span> <span class="o">=&gt;</span> <span class="s2">&quot;arctic%20alaskan%20shrubs&quot;</span> <span class="p">})</span>
-      <span class="n">results</span> <span class="o">=</span> <span class="ss">Nokogiri</span><span class="p">:</span><span class="ss">:XML</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@base_url</span><span class="si">}</span><span class="s2">/services/opensearchesip</span><span class="si">#{</span><span class="n">query_string</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">))</span>
+      <span class="n">results</span> <span class="o">=</span> <span class="n">query_esip_opensearch</span><span class="p">(</span><span class="s2">&quot;arctic%20alaskan%20shrubs&quot;</span><span class="p">)</span>
 
       <span class="n">result_scores</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">xpath</span><span class="p">(</span><span class="s1">&#39;//atom:feed/atom:entry/relevance:score&#39;</span><span class="p">,</span> <span class="no">ATOM_NAMESPACE</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="no">RELEVANCE_NAMESPACE</span><span class="p">))</span>
       <span class="n">result_scores</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">score</span><span class="o">|</span> <span class="n">score</span><span class="o">.</span><span class="n">text</span> <span class="p">}</span>
@@ -258,10 +279,23 @@ Returns true if Lucene is turned on</p>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-15'>
+    <tr id='section-16'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-15">&#182;</a>
+          <a class="pilcrow" href="#section-16">&#182;</a>
+        </div>
+        <p>Parse the totalResults element in an OpenSearch ESIP XML document</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">get_total_results</span><span class="p">(</span> <span class="n">xml_doc</span> <span class="p">)</span>
+      <span class="k">return</span> <span class="n">xml_doc</span><span class="o">.</span><span class="n">xpath</span><span class="p">(</span><span class="s1">&#39;//atom:feed/opensearch:totalResults&#39;</span><span class="p">,</span> <span class="no">ATOM_NAMESPACE</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="no">OPENSEARCH_NAMESPACE</span><span class="p">))</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">to_i</span>
+    <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-17'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-17">&#182;</a>
         </div>
         <p>Harvest all resource in the active profile
 The default timeout is 1500 seconds (25 minutes)</p>
@@ -276,10 +310,10 @@ The default timeout is 1500 seconds (25 minutes)</p>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-16'>
+    <tr id='section-18'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-16">&#182;</a>
+          <a class="pilcrow" href="#section-18">&#182;</a>
         </div>
         <p>Create an accessor (xml feed resource) for the given profile with the provided accessor configuration</p>
       </td>
@@ -295,10 +329,10 @@ The default timeout is 1500 seconds (25 minutes)</p>
       <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-17'>
+    <tr id='section-19'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-17">&#182;</a>
+          <a class="pilcrow" href="#section-19">&#182;</a>
         </div>
         <p>The response contains a comma separated list of the accessor id as well as the harvester id</p>
       </td>
@@ -311,10 +345,10 @@ The default timeout is 1500 seconds (25 minutes)</p>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-18'>
+    <tr id='section-20'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-18">&#182;</a>
+          <a class="pilcrow" href="#section-20">&#182;</a>
         </div>
         <p>Remove an accessor (xml feed resource) with the given name from the given profile</p>
       </td>
@@ -326,6 +360,37 @@ The default timeout is 1500 seconds (25 minutes)</p>
       <span class="no">Faraday</span><span class="o">.</span><span class="n">get</span> <span class="k">do</span> <span class="o">|</span><span class="n">req</span><span class="o">|</span>
         <span class="n">req</span><span class="o">.</span><span class="n">url</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@base_url</span><span class="si">}</span><span class="s2">/services/conf/brokerConfigurations/</span><span class="si">#{</span><span class="n">profile_id</span><span class="si">}</span><span class="s2">/harvesters/</span><span class="si">#{</span><span class="n">harvester_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="p">{</span> <span class="ss">:delete</span> <span class="o">=&gt;</span> <span class="s1">&#39;true&#39;</span><span class="p">,</span> <span class="ss">:random</span> <span class="o">=&gt;</span> <span class="n">generate_random_number</span> <span class="p">}</span>
         <span class="n">req</span><span class="o">.</span><span class="n">headers</span> <span class="o">=</span> <span class="no">AUTHORIZATION_HEADERS</span><span class="o">.</span><span class="n">merge</span><span class="p">({</span><span class="ss">:enctype</span><span class="o">=&gt;</span><span class="s1">&#39;multipart/form-data&#39;</span><span class="p">})</span>
+      <span class="k">end</span>
+    <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-21'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-21">&#182;</a>
+        </div>
+        <p>Publish an interface to access GI-Cat data for the given profile name
+The interface_configuration is a hash that defines a &#39;profiler&#39; and &#39;path&#39;</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="k">def</span> <span class="nf">publish_interface</span><span class="p">(</span> <span class="n">profile_name</span><span class="p">,</span> <span class="n">interface_configuration</span> <span class="p">)</span>
+      <span class="n">profile_id</span> <span class="o">=</span> <span class="n">find_profile_id</span><span class="p">(</span><span class="n">profile_name</span><span class="p">)</span>
+
+      <span class="n">response</span> <span class="o">=</span> <span class="no">Faraday</span><span class="o">.</span><span class="n">post</span> <span class="k">do</span> <span class="o">|</span><span class="n">req</span><span class="o">|</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">url</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@base_url</span><span class="si">}</span><span class="s2">/services/conf/brokerConfigurations/</span><span class="si">#{</span><span class="n">profile_id</span><span class="si">}</span><span class="s2">/profilers/&quot;</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">headers</span> <span class="o">=</span> <span class="no">AUTHORIZATION_HEADERS</span><span class="o">.</span><span class="n">merge</span><span class="p">({</span><span class="ss">:enctype</span><span class="o">=&gt;</span><span class="s1">&#39;multipart/form-data&#39;</span><span class="p">,</span> <span class="ss">:content_type</span><span class="o">=&gt;</span><span class="s1">&#39;application/x-www-form-urlencoded&#39;</span><span class="p">})</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">body</span> <span class="o">=</span> <span class="n">interface_configuration</span>
+      <span class="k">end</span>
+
+      <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">body</span>
+    <span class="k">end</span>
+
+    <span class="k">def</span> <span class="nf">unpublish_interface</span><span class="p">(</span> <span class="n">profile_name</span><span class="p">,</span> <span class="n">interface_name</span> <span class="p">)</span>
+      <span class="n">profile_id</span> <span class="o">=</span> <span class="n">find_profile_id</span><span class="p">(</span><span class="n">profile_name</span><span class="p">)</span>
+
+      <span class="no">Faraday</span><span class="o">.</span><span class="n">get</span> <span class="k">do</span> <span class="o">|</span><span class="n">req</span><span class="o">|</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">url</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@base_url</span><span class="si">}</span><span class="s2">/services/conf/brokerConfigurations/</span><span class="si">#{</span><span class="n">profile_id</span><span class="si">}</span><span class="s2">/profilers/</span><span class="si">#{</span><span class="n">interface_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="p">{</span> <span class="ss">:delete</span> <span class="o">=&gt;</span> <span class="s1">&#39;true&#39;</span><span class="p">,</span> <span class="ss">:random</span> <span class="o">=&gt;</span> <span class="n">generate_random_number</span> <span class="p">}</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">headers</span> <span class="o">=</span> <span class="no">AUTHORIZATION_HEADERS</span><span class="o">.</span><span class="n">merge</span><span class="p">({</span><span class="ss">:enctype</span><span class="o">=&gt;</span><span class="s1">&#39;multipart/form-data&#39;</span><span class="p">,</span> <span class="ss">:content_type</span><span class="o">=&gt;</span><span class="s1">&#39;application/x-www-form-urlencoded&#39;</span><span class="p">})</span>
       <span class="k">end</span>
     <span class="k">end</span></pre></div>
       </td>
@@ -355,10 +420,10 @@ The default timeout is 1500 seconds (25 minutes)</p>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-20'>
+    <tr id='section-23'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-20">&#182;</a>
+          <a class="pilcrow" href="#section-23">&#182;</a>
         </div>
         <p>Retrieve the harvester id given a profile name and accessor name</p>
       </td>
@@ -374,10 +439,10 @@ The default timeout is 1500 seconds (25 minutes)</p>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-21'>
+    <tr id='section-24'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-21">&#182;</a>
+          <a class="pilcrow" href="#section-24">&#182;</a>
         </div>
         <p>Retrieve the distributor id given a profile id</p>
       </td>
@@ -393,10 +458,10 @@ The default timeout is 1500 seconds (25 minutes)</p>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-22'>
+    <tr id='section-25'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-22">&#182;</a>
+          <a class="pilcrow" href="#section-25">&#182;</a>
         </div>
         <p>Retrieve the harvester id given a profile id and distributor id</p>
       </td>
@@ -412,10 +477,10 @@ The default timeout is 1500 seconds (25 minutes)</p>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-23'>
+    <tr id='section-26'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-23">&#182;</a>
+          <a class="pilcrow" href="#section-26">&#182;</a>
         </div>
         <p>Given a profile id, put all the associated resource id and title into harvest info array</p>
       </td>
@@ -436,10 +501,10 @@ The default timeout is 1500 seconds (25 minutes)</p>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-24'>
+    <tr id='section-27'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-24">&#182;</a>
+          <a class="pilcrow" href="#section-27">&#182;</a>
         </div>
         <p>Harvest from specified resource</p>
       </td>
@@ -459,10 +524,10 @@ The default timeout is 1500 seconds (25 minutes)</p>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-25'>
+    <tr id='section-28'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-25">&#182;</a>
+          <a class="pilcrow" href="#section-28">&#182;</a>
         </div>
         <p>Run a loop to request GI-Cat for the status of a harvest</p>
       </td>
@@ -472,10 +537,10 @@ The default timeout is 1500 seconds (25 minutes)</p>
         <span class="nb">sleep</span> <span class="mi">1</span>    <span class="c1"># Wait for one second</span></pre></div>
       </td>
     </tr>
-    <tr id='section-26'>
+    <tr id='section-29'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-26">&#182;</a>
+          <a class="pilcrow" href="#section-29">&#182;</a>
         </div>
         <p>appending unique number at the end of the request to bypass cache</p>
       </td>
@@ -498,10 +563,10 @@ The default timeout is 1500 seconds (25 minutes)</p>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-27'>
+    <tr id='section-30'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-27">&#182;</a>
+          <a class="pilcrow" href="#section-30">&#182;</a>
         </div>
         <p>Run till harvest all the resources are completed or time out</p>
 
