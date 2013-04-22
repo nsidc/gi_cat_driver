@@ -163,6 +163,8 @@ module GiCatDriver
 
       update_accessor_configuration( profile_id, accessor_id, accessor_configuration )
 
+      enable_profile profile_name
+
       return accessor_id
     end
 
@@ -249,6 +251,27 @@ module GiCatDriver
       end
       harvester_id = Nokogiri.XML(response.body).css("component id").text
       return harvester_id
+    end
+
+    # Retrieve the accessor id given a profile id and harvester id
+    def get_active_profile_accessor_id(profile_id, harvester_id)
+      accessor_request = "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}/harvesters/#{harvester_id}"
+      response = Faraday.get do |req|
+        req.url accessor_request
+        req.headers = AUTHORIZATION_HEADERS
+      end
+      accessor_id = Nokogiri.XML(response.body).css("component id").text
+      return accessor_id
+    end
+
+    def get_active_profile_accessor_name(profile_id, accessor_id)
+      accessor_request = "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}/accessors/#{accessor_id}"
+      response = Faraday.get do |req|
+        req.url accessor_request
+        req.headers = AUTHORIZATION_HEADERS
+      end
+      accessor = Nokogiri.XML(response.body).css("accessor name").text
+      return accessor
     end
 
     # Given a profile id, put all the associated resource id and title into harvest info array
