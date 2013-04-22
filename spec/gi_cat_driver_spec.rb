@@ -1,6 +1,6 @@
 require 'spec_helper'
-require 'gi_cat_driver'
 require 'webmock/rspec'
+require 'gi_cat_driver'
 
 describe GiCatDriver do
   before(:all) do
@@ -170,12 +170,7 @@ describe GiCatDriver do
         }, :query => {:opts => "active"})
         .to_return(:status => 200, :body => "", :headers => {})
 
-      query_url = "http://www.somecompany.com/services/opensearchesip?bbox=&ct=&gdc=&lac=&loc=&luc=&outputFormat=&rel=&si=&st=arctic%20alaskan%20shrubs&te=&ts="
-      stub_request(:get, query_url)
-        .with(:headers => {
-          'Accept'=>'*/*',
-          'User-Agent'=>'Ruby'
-        }).to_return(:status => 200, :body => File.new("spec/fixtures/opensearchesip_lucene_enabled.xml"), :headers => {})
+      @gi_cat.stub(:open).and_return File.new("spec/fixtures/opensearchesip_lucene_enabled.xml")
 
       @gi_cat.enable_lucene
 
@@ -271,6 +266,59 @@ describe GiCatDriver do
         to_return(:status => 200, :body => File.new("spec/fixtures/status.xml"), :headers => [])
 
       @gi_cat.harvest_all_resources_for_active_configuration
+    end
+  end
+
+  describe "profiler (published interface) configurations" do
+    it "publishes the opensearch esip interface" do
+      profile_name = "some_profile"
+      interface_config = {:profiler => "OPENSEARCH-ESIP", :path => "opensearchesip?"}
+
+      active_conf_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations"
+      stub_request(:get,active_conf_url)
+        .with(:headers => {
+          'Accept'=>'application/xml', 
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
+          'User-Agent'=>'Ruby', 
+          'Content-Type'=>'*/*'
+        }, :query => {:nameRepository => "gicat"})
+        .to_return(:status => 200, :body => File.new("spec/fixtures/brokerConfigurations.xml"), :headers => {})
+
+      stub_request(:post, "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations/1/profilers/").
+        with(:body => {"path"=>"opensearchesip?", "profiler"=>"OPENSEARCH-ESIP"},
+             :headers => {'Accept'=>'application/xml', 'Content-Type'=>'application/x-www-form-urlencoded', 'Enctype'=>'multipart/form-data', 'User-Agent'=>'Ruby'}).
+             to_return(:status => 200, :body => "save", :headers => {})
+
+      @gi_cat.stub(:open).and_return File.new("spec/fixtures/opensearchesip_lucene_enabled.xml")
+
+      response = @gi_cat.publish_interface(profile_name, interface_config)
+      response.should eql("save")
+      result_xml = @gi_cat.query_esip_opensearch("arctic%20alaskan%20shrubs")
+      @gi_cat.get_total_results(result_xml).should be > 0
+    end
+
+    it "unpublishes the opensearch esip interface" do
+      profile_name = "some_profile"
+      interface_name = "OPENSEARCH-ESIP"
+
+      active_conf_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations"
+      stub_request(:get,active_conf_url)
+        .with(:headers => {
+          'Accept'=>'application/xml', 
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
+          'User-Agent'=>'Ruby', 
+          'Content-Type'=>'*/*'
+        }, :query => {:nameRepository => "gicat"})
+        .to_return(:status => 200, :body => File.new("spec/fixtures/brokerConfigurations.xml"), :headers => {})
+
+      @gi_cat.stub(:generate_random_number).and_return("1")
+
+      stub_request(:get, "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations/1/profilers/OPENSEARCH-ESIP?delete=true&random=1").
+        with(:headers => {'Accept'=>'application/xml', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Content-Type'=>'application/x-www-form-urlencoded', 'Enctype'=>'multipart/form-data', 'User-Agent'=>'Ruby'}).
+        to_return(:status => 200, :body => "", :headers => {})
+
+      @gi_cat.unpublish_interface profile_name, interface_name
+      lambda {@gi_cat.query_esip_opensearch "arctic%20alaskan%20shrubs"}.should raise_error(RuntimeError)
     end
   end
 

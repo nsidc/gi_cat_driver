@@ -16,6 +16,7 @@ module GiCatDriver
   class GiCat
 
     ATOM_NAMESPACE = { "atom" => "http://www.w3.org/2005/Atom" }
+    OPENSEARCH_NAMESPACE = { "opensearch" => "http://a9.com/-/spec/opensearch/1.1/" }
     RELEVANCE_NAMESPACE = { "relevance" => "http://a9.com/-/opensearch/extensions/relevance/1.0/" }
     attr_accessor :base_url
 
@@ -105,18 +106,35 @@ module GiCatDriver
       set_lucene_enabled false
     end
 
+    # Perform an ESIP OpenSearch query using a search term against GI-Cat and returns a Nokogiri XML document
+    def query_esip_opensearch( search_term )
+      query_string = EsipOpensearchQueryBuilder::get_query_string({ :st => search_term })
+
+      begin
+        file = open("#{@base_url}/services/opensearchesip#{query_string}")
+      rescue => e
+        raise "Failed to query GI-Cat ESIP OpenSearch interface."
+      end
+
+      return Nokogiri::XML(file)
+    end
+
     # Find out whether Lucene indexing is turned on for the current profile
     # It is desirable to use REST to query GI-Cat for the value of this setting but GI-Cat does not yet support this.  
     # Instead, run a query and check that a 'relevance:score' element is present.
     # Returns true if Lucene is turned on
     def is_lucene_enabled?
-      query_string = EsipOpensearchQueryBuilder::get_query_string({ :st => "arctic%20alaskan%20shrubs" })
-      results = Nokogiri::XML(open("#{@base_url}/services/opensearchesip#{query_string}"))
+      results = query_esip_opensearch("arctic%20alaskan%20shrubs")
 
       result_scores = results.xpath('//atom:feed/atom:entry/relevance:score', ATOM_NAMESPACE.merge(RELEVANCE_NAMESPACE))
       result_scores.map { |score| score.text }
 
       return result_scores.count > 0
+    end
+
+    # Parse the totalResults element in an OpenSearch ESIP XML document
+    def get_total_results( xml_doc )
+      return xml_doc.xpath('//atom:feed/opensearch:totalResults', ATOM_NAMESPACE.merge(OPENSEARCH_NAMESPACE)).text.to_i
     end
 
     # Harvest all resource in the active profile
@@ -156,6 +174,29 @@ module GiCatDriver
       Faraday.get do |req|
         req.url "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}/harvesters/#{harvester_id}", { :delete => 'true', :random => generate_random_number }
         req.headers = AUTHORIZATION_HEADERS.merge({:enctype=>'multipart/form-data'})
+      end
+    end
+
+    # Publish an interface to access GI-Cat data for the given profile name
+    # The interface_configuration is a hash that defines a 'profiler' and 'path'
+    def publish_interface( profile_name, interface_configuration )
+      profile_id = find_profile_id(profile_name)
+
+      response = Faraday.post do |req|
+        req.url "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}/profilers/"
+        req.headers = AUTHORIZATION_HEADERS.merge({:enctype=>'multipart/form-data', :content_type=>'application/x-www-form-urlencoded'})
+        req.body = interface_configuration
+      end
+
+      return response.body
+    end
+
+    def unpublish_interface( profile_name, interface_name )
+      profile_id = find_profile_id(profile_name)
+
+      Faraday.get do |req|
+        req.url "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}/profilers/#{interface_name}", { :delete => 'true', :random => generate_random_number }
+        req.headers = AUTHORIZATION_HEADERS.merge({:enctype=>'multipart/form-data', :content_type=>'application/x-www-form-urlencoded'})
       end
     end
 
