@@ -360,6 +360,16 @@ describe GiCatDriver do
         }, :body => accessor_configuration)
         .to_return(:status => 200, :body => "Salvato", :headers => {})
 
+      enable_conf_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations/1"
+      stub_request(:get,enable_conf_url)
+        .with(:headers => {
+          'Accept'=>'application/xml', 
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
+          'User-Agent'=>'Ruby', 
+          'Content-Type'=>'*/*'
+        }, :query => {:opts => "active"})
+        .to_return(:status => 200, :body => "", :headers => {})
+
       @gi_cat.create_accessor(profile_name, accessor_configuration)
     end
   end
