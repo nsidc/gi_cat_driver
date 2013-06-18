@@ -19,8 +19,8 @@ module GiCatDriver
     OPENSEARCH_NAMESPACE = { "opensearch" => "http://a9.com/-/spec/opensearch/1.1/" }
     RELEVANCE_NAMESPACE = { "relevance" => "http://a9.com/-/opensearch/extensions/relevance/1.0/" }
 
-    STANDARD_HEADERS = { :content_type => "application/xml" }
-    AUTHORIZATION_HEADERS = { :content_type => "*/*", :Accept => "application/xml" }
+    @standard_headers = { :content_type => "application/xml" }
+    @authorization_headers = { :content_type => "*/*", :Accept => "application/xml" }
 
     attr_accessor :base_url
 
@@ -29,7 +29,7 @@ module GiCatDriver
       @admin_username = username
       @admin_password = password
 
-      AUTHORIZATION_HEADERS = AUTHORIZATION_HEADERS.merge({:Authorization => self.basic_auth_string})
+      @authorization_headers = @authorization_headers.merge({:Authorization => self.basic_auth_string})
     end
 
     # Basic Authorization used in the request headers
@@ -47,7 +47,7 @@ module GiCatDriver
       response = Faraday.post do |req|
         req.url "#{@base_url}/services/conf/brokerConfigurations/newBroker"
         req.body = "inputNewName=#{profile_name}&nameBrokerCopy=%20"
-        req.headers = AUTHORIZATION_HEADERS.merge({'enctype' => 'multipart/form-data',:content_type => 'application/x-www-form-urlencoded'})
+        req.headers = @authorization_headers.merge({'enctype' => 'multipart/form-data',:content_type => 'application/x-www-form-urlencoded'})
       end
 
       profile_id = response.body
@@ -59,7 +59,7 @@ module GiCatDriver
       profile_id = find_profile_id( profile_name )
       response = Faraday.get do |req|
         req.url "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}", { :opts => 'delete', :random => generate_random_number }
-        req.headers = AUTHORIZATION_HEADERS.merge({'enctype'=>'multipart/form-data'})
+        req.headers = @authorization_headers.merge({'enctype'=>'multipart/form-data'})
       end
 
       profile_id = response.body
@@ -71,7 +71,7 @@ module GiCatDriver
     def find_profile_id( profile_name )
       response = Faraday.get do |req|
         req.url "#{@base_url}/services/conf/brokerConfigurations", :nameRepository => 'gicat'
-        req.headers = AUTHORIZATION_HEADERS
+        req.headers = @authorization_headers
       end
 
       profile_id = parse_profile_element(profile_name, response.body)
@@ -83,7 +83,7 @@ module GiCatDriver
     def get_active_profile_id
       response = Faraday.get do |req|
         req.url "#{@base_url}/services/conf/giconf/configuration"
-        req.headers = STANDARD_HEADERS
+        req.headers = @standard_headers
       end
 
       profile_id = response.body
@@ -94,7 +94,7 @@ module GiCatDriver
     def enable_profile( profile_name )
       Faraday.get do |req|
         req.url "#{@base_url}/services/conf/brokerConfigurations/#{find_profile_id(profile_name)}?opts=active"
-        req.headers = AUTHORIZATION_HEADERS
+        req.headers = @authorization_headers
       end
     end
 
@@ -156,7 +156,7 @@ module GiCatDriver
 
       response = Faraday.post do |req|
         req.url "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}/distributors/#{distributor_id}"
-        req.headers = AUTHORIZATION_HEADERS.merge({:enctype=>'multipart/form-data', :content_type=>'application/x-www-form-urlencoded'})
+        req.headers = @authorization_headers.merge({:enctype=>'multipart/form-data', :content_type=>'application/x-www-form-urlencoded'})
         req.body = accessor_configuration
       end
 
@@ -177,7 +177,7 @@ module GiCatDriver
 
       Faraday.get do |req|
         req.url "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}/harvesters/#{harvester_id}", { :delete => 'true', :random => generate_random_number }
-        req.headers = AUTHORIZATION_HEADERS.merge({:enctype=>'multipart/form-data'})
+        req.headers = @authorization_headers.merge({:enctype=>'multipart/form-data'})
       end
     end
 
@@ -188,7 +188,7 @@ module GiCatDriver
 
       response = Faraday.post do |req|
         req.url "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}/profilers/"
-        req.headers = AUTHORIZATION_HEADERS.merge({:enctype=>'multipart/form-data', :content_type=>'application/x-www-form-urlencoded'})
+        req.headers = @authorization_headers.merge({:enctype=>'multipart/form-data', :content_type=>'application/x-www-form-urlencoded'})
         req.body = interface_configuration
       end
 
@@ -200,7 +200,7 @@ module GiCatDriver
 
       Faraday.get do |req|
         req.url "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}/profilers/#{interface_name}", { :delete => 'true', :random => generate_random_number }
-        req.headers = AUTHORIZATION_HEADERS.merge({:enctype=>'multipart/form-data', :content_type=>'application/x-www-form-urlencoded'})
+        req.headers = @authorization_headers.merge({:enctype=>'multipart/form-data', :content_type=>'application/x-www-form-urlencoded'})
       end
     end
 
@@ -213,13 +213,13 @@ module GiCatDriver
       Faraday.put do |req|
         req.url enable_lucene_request
         req.body = enabled.to_s
-        req.headers = AUTHORIZATION_HEADERS
+        req.headers = @authorization_headers
         req.options[:timeout] = 300
       end
 
       activate_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{get_active_profile_id}"
       Faraday.get(activate_profile_request, { :opts => "active" },
-        AUTHORIZATION_HEADERS)
+        @authorization_headers)
     end
 
     # Retrieve the harvester id given a profile name and accessor name
@@ -238,7 +238,7 @@ module GiCatDriver
       active_profile_request = "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}"
       response = Faraday.get do |req|
         req.url active_profile_request
-        req.headers = AUTHORIZATION_HEADERS
+        req.headers = @authorization_headers
       end
       distributor_id = Nokogiri.XML(response.body).css("component id").text
       return distributor_id
@@ -249,7 +249,7 @@ module GiCatDriver
       harvester_request = "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}/distributors/#{distributor_id}"
       response = Faraday.get do |req|
         req.url harvester_request
-        req.headers = AUTHORIZATION_HEADERS
+        req.headers = @authorization_headers
       end
       harvester_id = Nokogiri.XML(response.body).css("component id").text
       return harvester_id
@@ -260,7 +260,7 @@ module GiCatDriver
       accessor_request = "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}/harvesters/#{harvester_id}"
       response = Faraday.get do |req|
         req.url accessor_request
-        req.headers = AUTHORIZATION_HEADERS
+        req.headers = @authorization_headers
       end
       accessor_id = Nokogiri.XML(response.body).css("component id").text
       return accessor_id
@@ -270,7 +270,7 @@ module GiCatDriver
       accessor_request = "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}/accessors/#{accessor_id}"
       response = Faraday.get do |req|
         req.url accessor_request
-        req.headers = AUTHORIZATION_HEADERS
+        req.headers = @authorization_headers
       end
       accessor = Nokogiri.XML(response.body).css("accessor name").text
       return accessor
@@ -282,7 +282,7 @@ module GiCatDriver
       harvest_resource_request = "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}/distributors/#{id}"
       response = Faraday.get do |req|
         req.url harvest_resource_request
-        req.headers = AUTHORIZATION_HEADERS
+        req.headers = @authorization_headers
       end
       doc = Nokogiri::XML(response.body)
       harvestersinfo_array = {}
@@ -296,7 +296,7 @@ module GiCatDriver
     def harvest_resource_for_active_configuration(harvesterid, harvestername = "n/a")
       response = Faraday.get do |req|
         req.url "#{@base_url}/services/conf/brokerConfigurations/#{self.get_active_profile_id}/harvesters/#{harvesterid}/start"
-        req.headers = AUTHORIZATION_HEADERS
+        req.headers = @authorization_headers
       end
 
       if response.status == 200
@@ -317,7 +317,7 @@ module GiCatDriver
 
         response = Faraday.get do |req|
           req.url request
-          req.headers = AUTHORIZATION_HEADERS
+          req.headers = @authorization_headers
         end
 
         status = parse_status_xml(response.body, harvester_name)
@@ -372,7 +372,7 @@ module GiCatDriver
     def update_accessor_configuration( profile_id, accessor_id, accessor_configuration )
       response = Faraday.post do |req|
         req.url "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}/accessors/#{accessor_id}/update"
-        req.headers = AUTHORIZATION_HEADERS.merge({:enctype=>'multipart/form-data', :content_type=>'application/x-www-form-urlencoded'})
+        req.headers = @authorization_headers.merge({:enctype=>'multipart/form-data', :content_type=>'application/x-www-form-urlencoded'})
         req.body = accessor_configuration
       end
       return response.body
