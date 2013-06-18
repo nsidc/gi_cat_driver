@@ -43,6 +43,8 @@ Annotated source code documentation is available at http://nsidc.github.com/gi_c
 Rubydoc API documentation is available at http://rubydoc.info/gems/gi_cat_driver/
 
 ## Version History
+* 0.2.8
+  * Removed constant variables causing errors in the console output
 * 0.2.6
   * Fix for creating accessors to enable the profile and save the configuration
 * 0.2.5

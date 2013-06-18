@@ -18,16 +18,16 @@ module GiCatDriver
     ATOM_NAMESPACE = { "atom" => "http://www.w3.org/2005/Atom" }
     OPENSEARCH_NAMESPACE = { "opensearch" => "http://a9.com/-/spec/opensearch/1.1/" }
     RELEVANCE_NAMESPACE = { "relevance" => "http://a9.com/-/opensearch/extensions/relevance/1.0/" }
+
+    STANDARD_HEADERS = { :content_type => "application/xml" }
+    AUTHORIZATION_HEADERS = { :content_type => "*/*", :Accept => "application/xml", :Authorization => self.basic_auth_string }
+
     attr_accessor :base_url
 
     def initialize( url, username, password )
       @base_url = url.sub(/\/+$/, '')
       @admin_username = username
       @admin_password = password
-
-      # Set up a constant containing the standard request headers
-      self.class.const_set("STANDARD_HEADERS", { :content_type => "application/xml" })
-      self.class.const_set("AUTHORIZATION_HEADERS", { :content_type => "*/*", :Accept => "application/xml", :Authorization => self.basic_auth_string })
     end
 
     # Basic Authorization used in the request headers
