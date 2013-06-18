@@ -29,7 +29,7 @@ module GiCatDriver
       @admin_username = username
       @admin_password = password
 
-      AUTHORIZATION_HEADERS.merge({:Authorization => self.basic_auth_string})
+      AUTHORIZATION_HEADERS = AUTHORIZATION_HEADERS.merge({:Authorization => self.basic_auth_string})
     end
 
     # Basic Authorization used in the request headers
