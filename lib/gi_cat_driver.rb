@@ -52,8 +52,11 @@ module GiCatDriver
       return profile_id
     end
 
-    # Remove a profile with the given name
+    # Remove a profile with the given name and
+    # delete each of the related accessors to clear the associated data
     def delete_profile( profile_name )
+      delete_all_accessors(profile_name)
+
       profile_id = find_profile_id( profile_name )
       response = Faraday.get do |req|
         req.url "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}", { :opts => 'delete', :random => generate_random_number }
@@ -176,6 +179,16 @@ module GiCatDriver
       Faraday.get do |req|
         req.url "#{@base_url}/services/conf/brokerConfigurations/#{profile_id}/harvesters/#{harvester_id}", { :delete => 'true', :random => generate_random_number }
         req.headers = @authorization_headers.merge({:enctype=>'multipart/form-data'})
+      end
+    end
+
+    # Remove all accessors (xml feed resources) from the given profile
+    def delete_all_accessors( profile_name )
+      profile_id = find_profile_id(profile_name)
+      harvesters = get_harvest_resources(profile_id)
+      harvesters.each do |harvester_id, harvester_title|
+        accessor_name = get_active_profile_accessor_name(profile_id, harvester_id)
+        delete_accessor(profile_name, accessor_name)
       end
     end
 
