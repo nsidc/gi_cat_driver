@@ -43,7 +43,7 @@ Annotated source code documentation is available at http://nsidc.github.com/gi_c
 Rubydoc API documentation is available at http://rubydoc.info/gems/gi_cat_driver/
 
 ## Version History
-* 0.3.0
+* 0.3.1
   * Remove Gemfile.lock
 * 0.3.0
   * When a profile is removed all of its child accessors are also removed
