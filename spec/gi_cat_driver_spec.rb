@@ -12,8 +12,8 @@ describe GiCatDriver do
     it "can check that GI-Cat is running" do
       stub_request(:get, @base_url)
         .with(:headers => {
-          'Accept'=>'*/*', 
-          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
+          'Accept'=>'*/*',
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
           'User-Agent'=>'Faraday v0.8.7'
         }).to_return(:status => 200, :body => "", :headers => {})
 
@@ -45,9 +45,9 @@ describe GiCatDriver do
       request_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations"
       stub_request(:get,request_url)
         .with(:headers => {
-          'Accept'=>'application/xml', 
-          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
-          'User-Agent'=>'Ruby', 
+          'Accept'=>'application/xml',
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+          'User-Agent'=>'Ruby',
           'Content-Type'=>'*/*'
         }, :query => {:nameRepository => "gicat"})
         .to_return(:status => 200, :body => File.new("spec/fixtures/brokerConfigurations.xml"), :headers => {})
@@ -63,9 +63,9 @@ describe GiCatDriver do
       request_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations"
       stub_request(:get,request_url)
         .with(:headers => {
-          'Accept'=>'application/xml', 
-          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
-          'User-Agent'=>'Ruby', 
+          'Accept'=>'application/xml',
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+          'User-Agent'=>'Ruby',
           'Content-Type'=>'*/*'
         }, :query => {:nameRepository => "gicat"})
         .to_return(:status => 200, :body => File.new("spec/fixtures/brokerConfigurations.xml"), :headers => {})
@@ -78,9 +78,9 @@ describe GiCatDriver do
       enable_conf_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations/1"
       stub_request(:get,enable_conf_url)
         .with(:headers => {
-          'Accept'=>'application/xml', 
-          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
-          'User-Agent'=>'Ruby', 
+          'Accept'=>'application/xml',
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+          'User-Agent'=>'Ruby',
           'Content-Type'=>'*/*'
         }, :query => {:opts => "active"})
         .to_return(:status => 200, :body => "", :headers => {})
@@ -88,9 +88,9 @@ describe GiCatDriver do
       active_conf_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations"
       stub_request(:get,active_conf_url)
         .with(:headers => {
-          'Accept'=>'application/xml', 
-          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
-          'User-Agent'=>'Ruby', 
+          'Accept'=>'application/xml',
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+          'User-Agent'=>'Ruby',
           'Content-Type'=>'*/*'
         }, :query => {:nameRepository => "gicat"})
         .to_return(:status => 200, :body => File.new("spec/fixtures/brokerConfigurations.xml"), :headers => {})
@@ -98,9 +98,9 @@ describe GiCatDriver do
       conf_request_url = "http://www.somecompany.com/services/conf/giconf/configuration"
       stub_request(:get,conf_request_url)
         .with(:headers => {
-          'Accept'=>'*/*', 
-          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
-          'User-Agent'=>'Ruby', 
+          'Accept'=>'*/*',
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+          'User-Agent'=>'Ruby',
           'Content-Type'=>'application/xml'
         }).to_return(:status => 200, :body => "1", :headers => {})
 
@@ -146,26 +146,26 @@ describe GiCatDriver do
       enable_lucene_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations/1/luceneEnabled"
       stub_request(:put,enable_lucene_url)
         .with(:headers => {
-          'Accept'=>'application/xml', 
-          'User-Agent'=>'Ruby', 
+          'Accept'=>'application/xml',
+          'User-Agent'=>'Ruby',
           'Content-Type'=>'*/*'
         }, :body => "true").to_return(:status => 200, :body => "", :headers => {})
 
       conf_request_url = "http://www.somecompany.com/services/conf/giconf/configuration"
       stub_request(:get,conf_request_url)
         .with(:headers => {
-          'Accept'=>'*/*', 
-          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
-          'User-Agent'=>'Ruby', 
+          'Accept'=>'*/*',
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+          'User-Agent'=>'Ruby',
           'Content-Type'=>'application/xml'
         }).to_return(:status => 200, :body => "1", :headers => {})
 
       enable_conf_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations/1"
       stub_request(:get,enable_conf_url)
         .with(:headers => {
-          'Accept'=>'application/xml', 
-          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
-          'User-Agent'=>'Faraday v0.8.7', 
+          'Accept'=>'application/xml',
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+          'User-Agent'=>'Faraday v0.8.7',
           'Content-Type'=>'*/*'
         }, :query => {:opts => "active"})
         .to_return(:status => 200, :body => "", :headers => {})
@@ -181,26 +181,26 @@ describe GiCatDriver do
       disable_lucene_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations/1/luceneEnabled"
       stub_request(:put,disable_lucene_url)
         .with(:headers => {
-          'Accept'=>'application/xml', 
-          'User-Agent'=>'Ruby', 
+          'Accept'=>'application/xml',
+          'User-Agent'=>'Ruby',
           'Content-Type'=>'*/*'
         }, :body => "false").to_return(:status => 200, :body => "", :headers => {})
 
       conf_request_url = "http://www.somecompany.com/services/conf/giconf/configuration"
       stub_request(:get,conf_request_url)
         .with(:headers => {
-          'Accept'=>'*/*', 
-          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
-          'User-Agent'=>'Ruby', 
+          'Accept'=>'*/*',
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+          'User-Agent'=>'Ruby',
           'Content-Type'=>'application/xml'
         }).to_return(:status => 200, :body => "1", :headers => {})
 
       enable_conf_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations/1"
       stub_request(:get,enable_conf_url)
         .with(:headers => {
-          'Accept'=>'application/xml', 
-          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
-          'User-Agent'=>'Faraday v0.8.7', 
+          'Accept'=>'application/xml',
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+          'User-Agent'=>'Faraday v0.8.7',
           'Content-Type'=>'*/*'
         }, :query => {:opts => "active"})
         .to_return(:status => 200, :body => "", :headers => {})
@@ -277,9 +277,9 @@ describe GiCatDriver do
       active_conf_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations"
       stub_request(:get,active_conf_url)
         .with(:headers => {
-          'Accept'=>'application/xml', 
-          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
-          'User-Agent'=>'Ruby', 
+          'Accept'=>'application/xml',
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+          'User-Agent'=>'Ruby',
           'Content-Type'=>'*/*'
         }, :query => {:nameRepository => "gicat"})
         .to_return(:status => 200, :body => File.new("spec/fixtures/brokerConfigurations.xml"), :headers => {})
@@ -304,9 +304,9 @@ describe GiCatDriver do
       active_conf_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations"
       stub_request(:get,active_conf_url)
         .with(:headers => {
-          'Accept'=>'application/xml', 
-          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
-          'User-Agent'=>'Ruby', 
+          'Accept'=>'application/xml',
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+          'User-Agent'=>'Ruby',
           'Content-Type'=>'*/*'
         }, :query => {:nameRepository => "gicat"})
         .to_return(:status => 200, :body => File.new("spec/fixtures/brokerConfigurations.xml"), :headers => {})
@@ -334,9 +334,9 @@ describe GiCatDriver do
       enable_conf_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations/1"
       stub_request(:get,enable_conf_url)
         .with(:headers => {
-          'Accept'=>'application/xml', 
-          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
-          'User-Agent'=>'Ruby', 
+          'Accept'=>'application/xml',
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+          'User-Agent'=>'Ruby',
           'Content-Type'=>'*/*'
         })
         .to_return(:status => 200, :body => File.new("spec/fixtures/brokerConfigurations.xml"), :headers => {})
@@ -363,9 +363,9 @@ describe GiCatDriver do
       enable_conf_url = "http://admin:pass@www.somecompany.com/services/conf/brokerConfigurations/1"
       stub_request(:get,enable_conf_url)
         .with(:headers => {
-          'Accept'=>'application/xml', 
-          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 
-          'User-Agent'=>'Ruby', 
+          'Accept'=>'application/xml',
+          'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+          'User-Agent'=>'Ruby',
           'Content-Type'=>'*/*'
         }, :query => {:opts => "active"})
         .to_return(:status => 200, :body => "", :headers => {})
