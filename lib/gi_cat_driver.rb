@@ -141,8 +141,8 @@ module GiCatDriver
     end
 
     # Harvest all resource in the active profile
-    # The default timeout is 1500 seconds (25 minutes)
-    def harvest_all_resources_for_active_configuration timeout=1500
+    # The default timeout is 3600 seconds (1 hour)
+    def harvest_all_resources_for_active_configuration timeout=3600
       harvestersinfo_array = get_harvest_resources(get_active_profile_id)
       harvestersinfo_array.each do |harvester_id, harvester_title|
         harvest_resource_for_active_configuration(harvester_id.to_s, harvester_title)
@@ -311,7 +311,7 @@ module GiCatDriver
       end
 
       if response.status == 200
-        puts "#{Time.now}: Initiate harvesting GI-Cat resource #{harvestername}. Please wait a couple minutes for the process to complete."
+        puts "#{Time.now}: Initiate harvesting GI-Cat resource #{harvestername}. Please wait..."
       else
         raise "Failed to initiate harvesting GI-Cat resource #{harvestername}."
         response.return!(request, result, &block)
@@ -344,12 +344,12 @@ module GiCatDriver
     # Run till harvest all the resources are completed or time out
     def confirm_harvest_done(harvester_id, harvester_title, waitmax)
       begin
-        puts "Info: Max wait time (timeout) for current profile is set to #{waitmax} seconds"
+        puts "Info: Max wait time to harvest current profile is set to #{waitmax} seconds"
         Timeout::timeout(waitmax.to_i) do
           harvest_request_is_done(harvester_id.to_s, harvester_title)
         end
       rescue Timeout::Error
-        puts "Warning: re-harvest is time out(#{waitmax} seconds, we are going to reuse the previous harvest results"
+        puts "Warning: Harvest timed out after #{waitmax} seconds, reusing the previous harvest results."
       end
     end
 
