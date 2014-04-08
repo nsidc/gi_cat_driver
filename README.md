@@ -140,3 +140,4 @@ GI-Cat Driver is licensed under the MIT license. See [LICENSE.txt][license].
 
 This software was developed by the National Snow and Ice Data Center,
 sponsored by the National Science Foundation grant number OPP-10-16048.
+
