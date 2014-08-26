@@ -140,3 +140,18 @@ GI-Cat Driver is licensed under the MIT license. See [LICENSE.txt][license].
 
 This software was developed by the National Snow and Ice Data Center,
 sponsored by the National Science Foundation grant number OPP-10-16048.
+
+## How to contact NSIDC ###
+
+User Services and general information:  
+Support: http://support.nsidc.org  
+Email: nsidc@nsidc.org
+
+Phone: +1 303.492.6199  
+Fax: +1 303.492.2468
+
+Mailing address:  
+National Snow and Ice Data Center  
+CIRES, 449 UCB  
+University of Colorado  
+Boulder, CO 80309-0449 USA
